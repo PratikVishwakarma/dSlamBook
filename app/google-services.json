@@ -49,6 +49,50 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:833777590075:android:d1c13397cfe0f073",
+        "android_client_info": {
+          "package_name": "major.com.dslambook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "833777590075-anmnskpn02g2bch1j274r4fk6n5kj7vc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "major.com.dslambook",
+            "certificate_hash": "311e93fbde33a1768f88c8abe41e616b82935242"
+          }
+        },
+        {
+          "client_id": "833777590075-3ldopaartefvihmk29quqcgaafqku7rq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD11zYnUvN5g_oYNSOwsUfVHle0Q4STerQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "833777590075-3ldopaartefvihmk29quqcgaafqku7rq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"
