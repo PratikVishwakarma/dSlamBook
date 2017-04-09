@@ -19,13 +19,12 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import major.com.dslambook.Pojo.FullSinglePost;
 import major.com.dslambook.Pojo.Home;
 import major.com.dslambook.Pojo.Post;
 import major.com.dslambook.Pojo.User;
-import major.com.dslambook.PostsListAdapter;
+import major.com.dslambook.Adapter.PostsListAdapter;
 import major.com.dslambook.R;
 import major.com.dslambook.SignUpActivity;
 import major.com.dslambook.Utility.Constant;
@@ -34,9 +33,9 @@ import major.com.dslambook.Utility.Utility;
 public class homeActivity extends AppCompatActivity {
 
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference postsRef, homeRef, userRef;
+    private DatabaseReference postsRef, homeRef, userRef, likeRef;
 
-    private String idByEmail;
+    private String userIdByEmail;
     private Utility utility;
 
     public static final String MyPREFERENCES = "MyPrefs" ;
@@ -49,7 +48,7 @@ public class homeActivity extends AppCompatActivity {
     private ArrayList<Post> postsList = new ArrayList<>();
     private ArrayList<Home> homeList = new ArrayList<>();
     private ArrayList<FullSinglePost> fullSinglePostsList = new ArrayList<>();
-    int postCount, userDetailCount;
+    int postCount, userDetailCount, likeStatusCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +61,7 @@ public class homeActivity extends AppCompatActivity {
         postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_POST);
         homeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_HOME);
         userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_USERS);
+        likeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_LIKE);
 
         initializeScreen();
 
@@ -75,8 +75,8 @@ public class homeActivity extends AppCompatActivity {
             startActivity(intent);
         } else{
 //            Toast.makeText(getApplicationContext(), "User id is "+getUserEmailid, Toast.LENGTH_SHORT).show();
-            idByEmail = utility.emailToId(getUserEmailid);
-            homeRef.child(idByEmail).addValueEventListener(new ValueEventListener() {
+            userIdByEmail = utility.emailToId(getUserEmailid);
+            homeRef.child(userIdByEmail).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     homeList.clear();
@@ -93,7 +93,7 @@ public class homeActivity extends AppCompatActivity {
                             postsRef.child(idFromPostId[0]).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    Post value = dataSnapshot.getValue(Post.class);
+                                    final Post value = dataSnapshot.getValue(Post.class);
                                     postsList.add(value);
                                     final FullSinglePost fullSinglePost = new FullSinglePost();
                                     fullSinglePost.setUserId(value.getUserId());
@@ -112,14 +112,32 @@ public class homeActivity extends AppCompatActivity {
                                             User userVal = dataSnapshot.getValue(User.class);
                                             fullSinglePost.setUserName(userVal.getUserName());
                                             fullSinglePost.setUserProfilePic(userVal.getImageUrl());
-                                            fullSinglePostsList.add(fullSinglePost);
+
                                             userDetailCount = userDetailCount + 1;
-                                            Log.e("Counter ","counter called : "+postCount+" val "+postsList.size()+" hl "+homeList.size());
-                                            if(postCount == homeList.size() && userDetailCount == homeList.size()){
-                                                Log.e("check Counter ","called : ");
-                                                Collections.reverse(fullSinglePostsList);
-                                                postsListAdapter.notifyDataSetChanged();
-                                            }
+                                            likeRef.child(userIdByEmail).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                    if(dataSnapshot.exists()){
+                                                        fullSinglePost.setLikeStatus(Boolean.TRUE);
+                                                        fullSinglePostsList.add(fullSinglePost);
+                                                    } else{
+                                                        fullSinglePost.setLikeStatus(Boolean.FALSE);
+                                                        fullSinglePostsList.add(fullSinglePost);
+                                                    }
+                                                    likeStatusCount = likeStatusCount + 1;
+                                                    Log.e("Counter ","counter called : "+postCount+" val "+postsList.size()+" hl "+homeList.size());
+                                                    if(postCount == homeList.size() && userDetailCount == homeList.size() && likeStatusCount == homeList.size()){
+                                                        Log.e("check Counter ","called : ");
+                                                        Collections.reverse(fullSinglePostsList);
+                                                        postsListAdapter.notifyDataSetChanged();
+                                                    }
+                                                }
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
                                         }
 
                                         @Override
@@ -152,16 +170,19 @@ public class homeActivity extends AppCompatActivity {
                 }
             });
         }
+    }
 
-
+    @Override
+    public void onBackPressed() {
+        super.finish();
     }
 
     public void initializeScreen(){
         imageViewAddPost = (ImageView) findViewById(R.id.imageView_add_post);
-        imageViewUserProfile= (ImageView) findViewById(R.id.imageView_user_profile);
-        imageViewHome= (ImageView) findViewById(R.id.imageView_Home);
-        imageViewSearch= (ImageView) findViewById(R.id.imageView_Search);
-        imageViewFriends= (ImageView) findViewById(R.id.imageView_Friends);
+        imageViewUserProfile = (ImageView) findViewById(R.id.imageView_user_profile);
+        imageViewHome = (ImageView) findViewById(R.id.imageView_Home);
+        imageViewSearch = (ImageView) findViewById(R.id.imageView_Search);
+        imageViewFriends = (ImageView) findViewById(R.id.imageView_Friends);
 
         postsListView = (ListView) findViewById(R.id.listView_posts_list);
         postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.home_post_list_item, fullSinglePostsList);
@@ -180,6 +201,15 @@ public class homeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(homeActivity.this, searchUserActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+        imageViewUserProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(homeActivity.this, userProfileActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }

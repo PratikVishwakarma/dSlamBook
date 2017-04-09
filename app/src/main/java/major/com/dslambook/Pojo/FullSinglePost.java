@@ -12,6 +12,7 @@ public class FullSinglePost {
     public String date;
     public String image;
     public int  like;
+    public boolean  likeStatus;
     public String userName;
     public String userProfilePic;
 
@@ -19,7 +20,7 @@ public class FullSinglePost {
     }
 
     public FullSinglePost(String userId, String postId, String content, String time, String date, String image,
-                          int like, String userName, String userProfilePic) {
+                          int like,  boolean  likeStatus, String userName, String userProfilePic) {
         this.userId = userId;
         this.postId = postId;
         this.content = content;
@@ -27,6 +28,7 @@ public class FullSinglePost {
         this.date = date;
         this.image = image;
         this.like = like;
+        this.likeStatus = likeStatus;
         this.userName = userName;
         this.userProfilePic = userProfilePic;
     }
@@ -85,6 +87,14 @@ public class FullSinglePost {
 
     public void setLike(int like) {
         this.like = like;
+    }
+
+    public boolean isLikeStatus() {
+        return likeStatus;
+    }
+
+    public void setLikeStatus(boolean likeStatus) {
+        this.likeStatus = likeStatus;
     }
 
     public String getUserName() {

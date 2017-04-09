@@ -3,13 +3,13 @@ package major.com.dslambook.UI;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -22,14 +22,10 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import major.com.dslambook.Adapter.UsersListAdapter;
-import major.com.dslambook.Pojo.Post;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.R;
 import major.com.dslambook.Utility.Constant;
 import major.com.dslambook.Utility.Utility;
-import major.com.dslambook.otherProfileActivity;
-
-import static java.security.AccessController.getContext;
 
 public class searchUserActivity extends AppCompatActivity {
 
@@ -45,6 +41,7 @@ public class searchUserActivity extends AppCompatActivity {
     public static final String MyPREFERENCES = "MyPrefs" ;
     SharedPreferences sharedpreferences;
 
+    private ImageView imageViewUserProfile, imageViewAddPost, imageViewHome, imageViewSearch, imageViewFriends;
     private SearchView searchViewUser;
     private ListView listViewUsersList;
     @Override
@@ -66,8 +63,41 @@ public class searchUserActivity extends AppCompatActivity {
 
     public void initializeScreen(){
 
-        searchViewUser = (SearchView) findViewById(R.id.search_user_searchView_user);
 
+        imageViewAddPost = (ImageView) findViewById(R.id.imageView_search_add_post);
+        imageViewUserProfile = (ImageView) findViewById(R.id.imageView_search_user_profile);
+        imageViewHome = (ImageView) findViewById(R.id.imageView_search_Home);
+        imageViewSearch = (ImageView) findViewById(R.id.imageView_search_Search);
+        imageViewFriends = (ImageView) findViewById(R.id.imageView_search_Friends);
+
+        imageViewAddPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(searchUserActivity.this, addPostActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+        imageViewHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(searchUserActivity.this, homeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+        imageViewUserProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(searchUserActivity.this, userProfileActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+        searchViewUser = (SearchView) findViewById(R.id.search_user_searchView_user);
         searchViewUser.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -96,6 +126,11 @@ public class searchUserActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.finish();
     }
 
     public void searchUserByName(final String username){

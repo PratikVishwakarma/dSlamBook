@@ -21,7 +21,8 @@
         </activity>
         <activity android:name=".UI.addPostActivity" />
         <activity android:name=".UI.searchUserActivity" />
-        <activity android:name=".otherProfileActivity"></activity>
+        <activity android:name=".UI.otherProfileActivity" />
+        <activity android:name=".UI.userProfileActivity"></activity>
     </application>
 
 </manifest>

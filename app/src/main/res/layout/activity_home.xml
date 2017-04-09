@@ -6,16 +6,15 @@
     android:layout_height="match_parent"
     tools:context="major.com.dslambook.UI.homeActivity">
 
-
-        <ListView
-            android:id="@+id/listView_posts_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbars="vertical"
-            android:layout_marginBottom="52dp">
-        </ListView>
+    <ListView
+        android:id="@+id/listView_posts_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical"
+        android:layout_marginBottom="52dp">
+    </ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,7 +46,8 @@
             android:layout_weight="1"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_home_white_icon"/>
+            android:background="@color/footer_active_background_color"
+            app:srcCompat="@drawable/dsb_ic_home_icon"/>
         <ImageView
             android:id="@+id/imageView_Search"
             android:layout_width="match_parent"
@@ -55,7 +55,7 @@
             android:layout_weight="1"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_user_friends_icon"/>
+            app:srcCompat="@drawable/dsb_ic_search_user_icon"/>
         <ImageView
             android:id="@+id/imageView_Friends"
             android:layout_width="match_parent"
@@ -63,6 +63,6 @@
             android:layout_weight="1"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_user_friends_icon"/>
+            app:srcCompat="@drawable/dsb_ic_friends_icon"/>
     </LinearLayout>
 </RelativeLayout>

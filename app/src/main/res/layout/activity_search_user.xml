@@ -28,7 +28,7 @@
         android:layout_alignParentBottom="true"
         android:orientation="horizontal">
         <ImageView
-            android:id="@+id/imageView_user_profile"
+            android:id="@+id/imageView_search_user_profile"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -36,7 +36,7 @@
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/dsb_ic_user_profile_icon"/>
         <ImageView
-            android:id="@+id/imageView_add_post"
+            android:id="@+id/imageView_search_add_post"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -44,28 +44,29 @@
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/dsb_ic_story_icon"/>
         <ImageView
-            android:id="@+id/imageView_Home"
+            android:id="@+id/imageView_search_Home"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_home_white_icon"/>
+            app:srcCompat="@drawable/dsb_ic_home_icon"/>
         <ImageView
-            android:id="@+id/imageView_Search"
+            android:id="@+id/imageView_search_Search"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/footer_active_background_color"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_user_friends_icon"/>
+            app:srcCompat="@drawable/dsb_ic_search_user_icon"/>
         <ImageView
-            android:id="@+id/imageView_Friends"
+            android:id="@+id/imageView_search_Friends"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:scaleType="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/dsb_ic_user_friends_icon"/>
+            app:srcCompat="@drawable/dsb_ic_friends_icon"/>
     </LinearLayout>
 </RelativeLayout>

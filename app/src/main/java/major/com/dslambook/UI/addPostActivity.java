@@ -123,6 +123,11 @@ public class addPostActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.finish();
+    }
+
     public void createPostId(){
         Log.e("User email ", idByEmail);
         final Query query = databaseRef.child(Constant.FIREBASE_LOCATION_USERS).child(idByEmail);

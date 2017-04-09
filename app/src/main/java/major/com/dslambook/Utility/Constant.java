@@ -14,6 +14,7 @@ public class Constant {
     public static final String FIREBASE_LOCATION_POST= "Post";
     public static final String FIREBASE_LOCATION_HOME = "home";
     public static final String FIREBASE_LOCATION_FRIEND = "friend";
+    public static final String FIREBASE_LOCATION_LIKE = "like";
     public static final String FIREBASE_LOCATION_STORAGE_POSTIMAGE = "postImage";
     public static final String FIREBASE_LOCATION_STORAGE_DISPLAYPICTURE = "displayPicture";
 
