@@ -22,7 +22,9 @@
         <activity android:name=".UI.addPostActivity" />
         <activity android:name=".UI.searchUserActivity" />
         <activity android:name=".UI.otherProfileActivity" />
-        <activity android:name=".UI.userProfileActivity"></activity>
+        <activity android:name=".UI.userProfileActivity" />
+        <activity android:name=".UI.singleChatActivity" />
+        <activity android:name=".UI.userFriendsActivity"></activity>
     </application>
 
 </manifest>

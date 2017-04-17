@@ -15,6 +15,7 @@ public class Constant {
     public static final String FIREBASE_LOCATION_HOME = "home";
     public static final String FIREBASE_LOCATION_FRIEND = "friend";
     public static final String FIREBASE_LOCATION_LIKE = "like";
+    public static final String FIREBASE_LOCATION_CHAT = "chat";
     public static final String FIREBASE_LOCATION_STORAGE_POSTIMAGE = "postImage";
     public static final String FIREBASE_LOCATION_STORAGE_DISPLAYPICTURE = "displayPicture";
 
@@ -27,7 +28,8 @@ public class Constant {
     public static final String INTENT_KEY_STRING_HOME_CALLING = "homeIntent";
     public static final String INTENT_VALUE_STRING_HOME_CALLING_NORMAL = "normal";
     public static final String INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST = "afterPost";
-    public static final String INTENT_KEY_STRING_USERLIST_TO_PROFILE = "userListToProfile";
+    public static final String INTENT_KEY_TO_OTHER_USER_PROFILE = "ToOtherUserProfile";
+    public static final String INTENT_KEY_TO_SINGLE_CHAT_ACTIVITY = "ToSingleChatActivity";
 
     /*
     * Constants for formats like time and date
@@ -54,6 +56,8 @@ public class Constant {
     public static final int FRIEND_REQUEST_TYPE_DELETE_REQUEST = 4;
     public static final int FRIEND_REQUEST_TYPE_NOT_NOW_REQUEST = 5;
 
+    public static final String CHAT_MESSAGE_TYPE_SENT = "messageSent";
+    public static final String CHAT_MESSAGE_TYPE_RECIEVE = "messageRecieve";
 
 
 }

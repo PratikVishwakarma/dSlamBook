@@ -14,4 +14,17 @@ public class Utility {
         return postId.split(Constant.STRING_POSTID_DIFFERENTIATOR);
     }
 
+    public String convertTimeForChat(String time){
+        String[] split = time.split(":");
+        int hours = Integer.parseInt(split[0]);
+        if(hours > 11){
+            if(hours == 12){
+                return 12+":"+split[1]+" PM";
+            } else {
+                return hours - 12 + ":" + split[1] + " PM";
+            }
+        } else {
+            return split[0]+":"+split[1]+" AM";
+        }
+    }
 }

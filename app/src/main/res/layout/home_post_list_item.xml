@@ -22,14 +22,20 @@
             android:orientation="horizontal"
             android:paddingLeft="@dimen/feed_item_padding_left_right"
             android:paddingRight="@dimen/feed_item_padding_left_right" >
-
-            <ImageView
-                android:id="@+id/imageView_post_item_user_profile_pic"
+            <LinearLayout
+                android:background="@drawable/bg_rounded_user_profile_pic"
                 android:layout_width="@dimen/feed_item_profile_pic"
-                android:layout_height="@dimen/feed_item_profile_pic"
-                android:scaleType="fitCenter" >
-            </ImageView>
+                android:layout_height="@dimen/feed_item_profile_pic">
 
+                <ImageView
+                    android:id="@+id/imageView_post_item_user_profile_pic"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/bg_rounded_user_profile_pic">
+                    <!--android:scaleType="fitCenter" >-->
+                </ImageView>
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,7 +86,6 @@
                 android:id="@+id/textView_post_item_post_liked"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:textStyle="bold"
                 android:text="Liked"
                 android:textColor="#8c9eff"/>
@@ -88,7 +93,6 @@
                 android:id="@+id/textView_post_item_post_notliked"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:text="Like"
                 android:textColor="#616161"/>
             <TextView

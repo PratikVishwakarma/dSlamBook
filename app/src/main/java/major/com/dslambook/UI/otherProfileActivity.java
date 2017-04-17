@@ -3,6 +3,9 @@ package major.com.dslambook.UI;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +30,7 @@ import major.com.dslambook.Pojo.Friend;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.R;
 import major.com.dslambook.Utility.Constant;
+import major.com.dslambook.Utility.ImageConverter;
 import major.com.dslambook.Utility.Utility;
 
 public class otherProfileActivity extends AppCompatActivity {
@@ -44,7 +48,8 @@ public class otherProfileActivity extends AppCompatActivity {
 
     private TextView textView_otherUser_username, textView_otherUser_dob;
     private ImageView imageView_otherUser_profilePic;
-    private Button button_addFriend, button_acceptFriendRequest, button_cancelFriendRequest, button_unFriend;
+    private Button button_addFriend, button_acceptFriendRequest, button_cancelFriendRequest, button_unFriend, button_notNow;
+    private FloatingActionButton fab_chat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,7 @@ public class otherProfileActivity extends AppCompatActivity {
 
         utility = new Utility();
         Intent intent = getIntent();
-        otherUser = intent.getParcelableExtra(Constant.INTENT_KEY_STRING_USERLIST_TO_PROFILE);
+        otherUser = intent.getParcelableExtra(Constant.INTENT_KEY_TO_OTHER_USER_PROFILE);
         otherUserEmailId = otherUser.getEmail();
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -84,15 +89,22 @@ public class otherProfileActivity extends AppCompatActivity {
         button_addFriend = (Button) findViewById(R.id.otherUser_button_add_friend_request);
         button_acceptFriendRequest = (Button) findViewById(R.id.otherUser_button_accept_friend_request);
         button_cancelFriendRequest = (Button) findViewById(R.id.otherUser_button_cancel_friend_request);
-        button_unFriend= (Button) findViewById(R.id.otherUser_button_unfriend);
+        button_unFriend = (Button) findViewById(R.id.otherUser_button_unfriend);
+        button_notNow = (Button) findViewById(R.id.otherUser_button_notNow);
+        fab_chat = (FloatingActionButton) findViewById(R.id.otherUser_fab_chat);
 
         button_addFriend.setVisibility(View.GONE);
         button_acceptFriendRequest.setVisibility(View.GONE);
         button_cancelFriendRequest.setVisibility(View.GONE);
         button_unFriend.setVisibility(View.GONE);
+        button_notNow.setVisibility(View.GONE);
         Picasso.with(getApplicationContext())
                 .load(otherUser.getImageUrl())
                 .into(imageView_otherUser_profilePic);
+
+//        Bitmap bitmap = ((BitmapDrawable) imageView_otherUser_profilePic.getDrawable()).getBitmap();
+//        Bitmap circularBitmap = ImageConverter.getRoundedCornerBitmap(bitmap, 180);
+//        imageView_otherUser_profilePic.setImageBitmap(circularBitmap);
 
         textView_otherUser_username.setText(otherUser.getUserName());
         textView_otherUser_dob.setText(otherUser.getDob());
@@ -127,6 +139,23 @@ public class otherProfileActivity extends AppCompatActivity {
                 acceptFriendRequest();
                 button_acceptFriendRequest.setVisibility(View.GONE);
                 button_unFriend.setVisibility(View.VISIBLE);
+            }
+        });
+        button_notNow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelSendFriendRequest();
+                button_notNow.setVisibility(View.GONE);
+                button_acceptFriendRequest.setVisibility(View.GONE);
+                button_addFriend.setVisibility(View.VISIBLE);
+            }
+        });
+        fab_chat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent chatIntent = new Intent(otherProfileActivity.this, singleChatActivity.class);
+                chatIntent.putExtra(Constant.INTENT_KEY_TO_SINGLE_CHAT_ACTIVITY, otherUser);
+                startActivity(chatIntent);
             }
         });
     }
@@ -172,9 +201,10 @@ public class otherProfileActivity extends AppCompatActivity {
                             break;
                         case Constant.FRIEND_REQUEST_TYPE_GET_REQUEST:
                             button_acceptFriendRequest.setVisibility(View.VISIBLE);
+                            button_notNow.setVisibility(View.VISIBLE);
                             break;
                         case Constant.FRIEND_REQUEST_TYPE_FRIENDS:
-                            button_acceptFriendRequest.setVisibility(View.VISIBLE);
+                            button_unFriend.setVisibility(View.VISIBLE);
                             break;
                         default:
                             break;
@@ -201,6 +231,7 @@ public class otherProfileActivity extends AppCompatActivity {
                 friendRef.child(otherUserIdByEmail).child(userIdByEmail).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+//                        button_acceptFriendRequest.setVisibility(View.GONE);
                         Toast.makeText(getApplicationContext(),"Friend Request Canceled", Toast.LENGTH_SHORT).show();
                     }
                 });

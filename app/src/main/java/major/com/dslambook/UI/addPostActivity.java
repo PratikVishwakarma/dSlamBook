@@ -42,6 +42,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import major.com.dslambook.Pojo.Friend;
 import major.com.dslambook.Pojo.Home;
 import major.com.dslambook.Pojo.Post;
 import major.com.dslambook.Pojo.User;
@@ -59,7 +60,7 @@ public class addPostActivity extends AppCompatActivity {
     public FirebaseUser user;
 
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference databaseRef;
+    private DatabaseReference homeRef, friendRef, userRef;
     private FirebaseStorage mFirebaseStorage;
     private StorageReference storageReference;
 
@@ -100,12 +101,13 @@ public class addPostActivity extends AppCompatActivity {
             idByEmail = utility.emailToId(getUserEmailid);
         }
 
-
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseStorage = FirebaseStorage.getInstance();
 
-        databaseRef = mFirebaseDatabase.getReference();
+        homeRef = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_HOME);
+        friendRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_FRIEND);
+        userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_USERS);
         storageReference = mFirebaseStorage.getReference();
 
 
@@ -130,9 +132,9 @@ public class addPostActivity extends AppCompatActivity {
 
     public void createPostId(){
         Log.e("User email ", idByEmail);
-        final Query query = databaseRef.child(Constant.FIREBASE_LOCATION_USERS).child(idByEmail);
+        final Query query = userRef.child(idByEmail);
         Log.e("Refrence ", query+"");
-        databaseRef.child(Constant.FIREBASE_LOCATION_USERS).child(idByEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        userRef.child(idByEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
@@ -164,9 +166,9 @@ public class addPostActivity extends AppCompatActivity {
 //                    .load(uri1)
 //                    .resize(200, 200)
 //                    .into(showImageView1);
-            addImagebtn.setImageURI(null);
-            addImagebtn.setImageURI(uri);
-            bitmap = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+//            addImagebtn.setImageURI(null);
+//            addImagebtn.setImageURI(uri);
+//            bitmap = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
         }
     }
 
@@ -186,7 +188,7 @@ public class addPostActivity extends AppCompatActivity {
                         .child(idByEmail).child(imageName);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 abitmaps.compress(Bitmap.CompressFormat.JPEG, 55, baos);
-                byte[] data = baos.toByteArray();
+                final byte[] data = baos.toByteArray();
                 UploadTask uploadTask = photoRef.putBytes(data);
                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -200,13 +202,33 @@ public class addPostActivity extends AppCompatActivity {
                             Log.e("Total Images upload ", "Task of post successful");
                         }
                         Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_YOU, currentTime, currentDate);
-                        Task<Void> voidTaskHome = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_HOME)
-                                .child(idByEmail).child(postid).setValue(home);
-                        Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(getApplicationContext(), homeActivity.class);
-                        intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        homeRef.child(idByEmail).child(postid).setValue(home).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        friendRef.child(idByEmail).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                                                    Friend friend = childDataSnapshot.getValue(Friend.class);
+                                                    if(friend.getRequestType() == 3){
+                                                        Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_FRIEND, currentTime, currentDate);
+                                                        homeRef.child(friend.getOtherUserId()).child(postid).setValue(home);
+                                                    }
+                                                }
+                                                Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
+                                                Intent intent = new Intent(getApplicationContext(), homeActivity.class);
+                                                intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                startActivity(intent);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+                                    }
+                                });
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -223,13 +245,33 @@ public class addPostActivity extends AppCompatActivity {
                     Log.e("Total Images upload ", "Task of post successful");
                 }
                 Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_YOU, currentTime, currentDate);
-                Task<Void> voidTaskHome = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_HOME)
-                        .child(idByEmail).child(postid).setValue(home);
-                Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), homeActivity.class);
-                intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                homeRef.child(idByEmail).child(postid).setValue(home).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        friendRef.child(idByEmail).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                                    Friend friend = childDataSnapshot.getValue(Friend.class);
+                                    if(friend.getRequestType() == 3){
+                                        Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_FRIEND, currentTime, currentDate);
+                                        homeRef.child(friend.getOtherUserId()).child(postid).setValue(home);
+                                    }
+                                }
+                                Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getApplicationContext(), homeActivity.class);
+                                intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
             }
 //        progressDialog.dismiss();
         }
@@ -271,7 +313,7 @@ public class addPostActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if(s.toString().length() == 0){
                     content_post = null;
-                    Toast.makeText(getApplicationContext(), "c is "+content_post, Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(), "c is "+content_post, Toast.LENGTH_SHORT).show();
                 }else{
                     content_post = editText_post_content.getText().toString();
                 }

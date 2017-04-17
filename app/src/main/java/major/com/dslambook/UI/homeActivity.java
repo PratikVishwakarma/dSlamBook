@@ -5,9 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,6 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import major.com.dslambook.Adapter.PostsListRecyclerAdapter;
 import major.com.dslambook.Pojo.FullSinglePost;
 import major.com.dslambook.Pojo.Home;
 import major.com.dslambook.Pojo.Post;
@@ -44,7 +49,9 @@ public class homeActivity extends AppCompatActivity {
     private ImageView imageViewUserProfile, imageViewAddPost, imageViewHome, imageViewSearch, imageViewFriends;
 
     private ListView postsListView;
+//    private RecyclerView postsListView;
     private PostsListAdapter postsListAdapter;
+    private PostsListRecyclerAdapter rpostsListAdapter;
     private ArrayList<Post> postsList = new ArrayList<>();
     private ArrayList<Home> homeList = new ArrayList<>();
     private ArrayList<FullSinglePost> fullSinglePostsList = new ArrayList<>();
@@ -130,6 +137,7 @@ public class homeActivity extends AppCompatActivity {
                                                         Log.e("check Counter ","called : ");
                                                         Collections.reverse(fullSinglePostsList);
                                                         postsListAdapter.notifyDataSetChanged();
+//                                                        rpostsListAdapter.notifyDataSetChanged();
                                                     }
                                                 }
                                                 @Override
@@ -187,6 +195,13 @@ public class homeActivity extends AppCompatActivity {
         postsListView = (ListView) findViewById(R.id.listView_posts_list);
         postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.home_post_list_item, fullSinglePostsList);
         postsListView.setAdapter(postsListAdapter);
+//
+//        postsListView = (RecyclerView) findViewById(R.id.recycler_view_posts_list);
+//        rpostsListAdapter = new PostsListRecyclerAdapter(fullSinglePostsList, getApplicationContext());
+//        android.support.v7.widget.LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+//        postsListView.setLayoutManager(mLayoutManager);
+//        postsListView.setItemAnimator(new DefaultItemAnimator());
+//        postsListView.setAdapter(rpostsListAdapter);
 
         imageViewAddPost.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,6 +225,14 @@ public class homeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(homeActivity.this, userProfileActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+        imageViewFriends.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(homeActivity.this, userFriendsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }

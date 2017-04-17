@@ -27,7 +27,7 @@ import major.com.dslambook.R;
 import major.com.dslambook.Utility.Constant;
 import major.com.dslambook.Utility.Utility;
 
-public class searchUserActivity extends AppCompatActivity {
+public class userFriendsActivity extends AppCompatActivity {
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference userRef;
@@ -42,12 +42,12 @@ public class searchUserActivity extends AppCompatActivity {
     SharedPreferences sharedpreferences;
 
     private ImageView imageViewUserProfile, imageViewAddPost, imageViewHome, imageViewSearch, imageViewFriends;
-    private SearchView searchViewUser;
     private ListView listViewUsersList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_user);
+        setContentView(R.layout.activity_user_friends);
 
         utility = new Utility();
 
@@ -57,21 +57,20 @@ public class searchUserActivity extends AppCompatActivity {
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         userEmailid = sharedpreferences.getString(Constant.SHARED_PREFRENCE_USER_EMAIL_ID, null);
         idByEmail = utility.emailToId(userEmailid);
-
-        initializeScreen();
     }
 
     public void initializeScreen(){
-        imageViewAddPost = (ImageView) findViewById(R.id.imageView_search_add_post);
-        imageViewUserProfile = (ImageView) findViewById(R.id.imageView_search_user_profile);
-        imageViewHome = (ImageView) findViewById(R.id.imageView_search_Home);
-        imageViewSearch = (ImageView) findViewById(R.id.imageView_search_Search);
-        imageViewFriends = (ImageView) findViewById(R.id.imageView_search_Friends);
+
+
+        imageViewAddPost = (ImageView) findViewById(R.id.users_friends_imageView_add_post);
+        imageViewUserProfile = (ImageView) findViewById(R.id.users_friends_imageView_profile);
+        imageViewHome = (ImageView) findViewById(R.id.users_friends_imageView_Home);
+        imageViewSearch = (ImageView) findViewById(R.id.users_friends_imageView_Search);
 
         imageViewAddPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(searchUserActivity.this, addPostActivity.class);
+                Intent intent = new Intent(userFriendsActivity.this, addPostActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
@@ -80,7 +79,7 @@ public class searchUserActivity extends AppCompatActivity {
         imageViewHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(searchUserActivity.this, homeActivity.class);
+                Intent intent = new Intent(userFriendsActivity.this, homeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
@@ -89,33 +88,18 @@ public class searchUserActivity extends AppCompatActivity {
         imageViewUserProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(searchUserActivity.this, userProfileActivity.class);
+                Intent intent = new Intent(userFriendsActivity.this, userProfileActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         });
 
-        imageViewFriends.setOnClickListener(new View.OnClickListener() {
+        imageViewSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(searchUserActivity.this, userFriendsActivity.class);
+                Intent intent = new Intent(userFriendsActivity.this, searchUserActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-            }
-        });
-
-
-        searchViewUser = (SearchView) findViewById(R.id.search_user_searchView_user);
-        searchViewUser.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                Log.e("Search User ",query);
-                searchUserByName(query);
-                return false;
-            }
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
             }
         });
 
@@ -136,14 +120,9 @@ public class searchUserActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        super.finish();
-    }
-
-    public void searchUserByName(final String username){
+    public void searchUsersFriends(final String username){
         Log.e("Search User ","search User By Name called.");
-        userRef.orderByValue().startAt(username).addValueEventListener(new ValueEventListener() {
+        userRef.orderByValue().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 usersList.clear();

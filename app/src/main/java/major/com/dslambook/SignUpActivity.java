@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +41,7 @@ import java.util.List;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.UI.homeActivity;
 import major.com.dslambook.Utility.Constant;
+import major.com.dslambook.Utility.ImageConverter;
 import major.com.dslambook.Utility.Utility;
 
 public class SignUpActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
@@ -104,7 +108,18 @@ public class SignUpActivity extends AppCompatActivity implements AdapterView.OnI
                                 initializeScreen();
                                 String name = user.getDisplayName();
                                 username.setText(name);
-                                Picasso.with(getApplicationContext()).load(user.getPhotoUrl()).into(profile_pic);
+                                Picasso.with(getApplicationContext())
+                                        .load(user.getPhotoUrl())
+                                        .into(profile_pic, new Callback() {
+                                            @Override
+                                            public void onSuccess() {
+                                                Bitmap bitmap = ((BitmapDrawable) profile_pic.getDrawable()).getBitmap();
+                                                Bitmap circularBitmap = ImageConverter.getRoundedCornerBitmap(bitmap, 180);
+                                                profile_pic.setImageBitmap(circularBitmap);
+                                            }
+                                            @Override
+                                            public void onError() {}
+                                        });
                                 Toast.makeText(getApplicationContext(),name,Toast.LENGTH_SHORT).show();
                                 button_next.setVisibility(View.VISIBLE);
                             }
