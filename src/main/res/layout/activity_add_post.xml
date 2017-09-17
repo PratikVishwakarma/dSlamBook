@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical"
+    android:padding="12dp"
+    android:background="@drawable/registration_page_background"
+    tools:context="major.com.dslambook.UI.addPostActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="What's in mind?"/>
+        <EditText
+            android:id="@+id/editText_post_content"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:scrollbars="vertical"
+            android:background="#11000000"/>
+        <ImageButton
+            android:id="@+id/imageButton_add_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/dsb_ic_add_image_icon"/>
+        <ImageView
+            android:id="@+id/imageView_post_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"/>
+    </LinearLayout>
+    <Button
+        android:id="@+id/button_post"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="4dp"
+        android:text="Post"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/com_facebook_button_background"/>
+</RelativeLayout>

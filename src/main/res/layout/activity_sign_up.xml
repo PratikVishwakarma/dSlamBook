@@ -1,0 +1,89 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="vertical"
+    android:padding="12dp"
+    android:background="@drawable/round"
+    tools:context="major.com.dslambook.SignUpActivity">
+    <!--android:background="@drawable/registration_page_background">-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="8dp">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="15dp">
+            <ImageView
+                android:id="@+id/imageView_profile_pic"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_user"/>
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentBottom="true"
+                android:adjustViewBounds="true"
+                android:paddingBottom="4dp"
+                android:paddingLeft="4dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_profile_pic_edit"/>
+
+        </RelativeLayout>
+        <EditText
+            android:id="@+id/signup_editText_name"
+            style="@style/EdittextStyle"
+            android:textColorHint="@color/white"
+            android:hint="Name"/>
+
+        <EditText
+            android:id="@+id/signup_editText_username"
+            style="@style/EdittextStyle"
+            android:hint="Username"/>
+
+        <EditText
+            android:id="@+id/signup_editText_bio"
+            style="@style/EdittextStyle"
+            android:hint="About you"/>
+        <!--Bio-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="horizontal"-->
+            <!--android:layout_marginBottom="10dp">-->
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Bio          :  "/>-->
+
+            <!--<EditText-->
+                <!--android:id="@+id/textView_bio"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:minLines="2"-->
+                <!--android:maxLength="120"/>-->
+        <!--</LinearLayout>-->
+
+        <Button
+            android:id="@+id/button_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/round"
+            android:text="Next"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            />
+    </LinearLayout>
+
+
+</ScrollView>

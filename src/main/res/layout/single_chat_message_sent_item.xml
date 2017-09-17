@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="18dp"
+    android:gravity="right">
+
+    <LinearLayout
+        android:id="@+id/singleMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="15dp"
+        android:background="@drawable/ic_chat_bubble_sent">
+
+        <TextView
+            android:id="@+id/single_chat_item_message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="5dip"
+            android:layout_marginRight="5dip"
+            android:paddingLeft="10dip"
+            android:text="Hello bubbles!"
+            android:textColor="@android:color/primary_text_light" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="right">
+            <TextView
+                android:id="@+id/single_chat_item_message_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#88000000"
+                android:textSize="10dp"
+                android:layout_marginRight="4dp"
+                android:text="Time"/>
+            <ImageView
+                android:id="@+id/single_chat_item_message_seen"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/message_seen"
+                android:visibility="invisible"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
