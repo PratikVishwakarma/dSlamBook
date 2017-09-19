@@ -24,6 +24,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import major.com.dslambook.Adapter.PostsListRecyclerAdapter;
 import major.com.dslambook.Pojo.FullSinglePost;
@@ -57,8 +59,11 @@ public class homeActivity extends AppCompatActivity {
     private PostsListRecyclerAdapter rpostsListAdapter;
     private ArrayList<Post> postsList = new ArrayList<>();
     private ArrayList<Home> homeList = new ArrayList<>();
+    private Map<String, Integer> commentCountList = new HashMap<>();
     private ArrayList<FullSinglePost> fullSinglePostsList = new ArrayList<>();
     int postCount, userDetailCount, likeStatusCount;
+
+    int postDetailCount = 0, commentCount = 0;
     String userEmailId;
 
     @Override
@@ -71,8 +76,8 @@ public class homeActivity extends AppCompatActivity {
         utility = new Utility();
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_POST);
-        homeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_HOME);
+        postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_POST);
+        homeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_HOME);
         userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_USERS);
         likeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_LIKE);
 
@@ -85,105 +90,211 @@ public class homeActivity extends AppCompatActivity {
         } else{
             goToSignupActivity();
         }
+        loadAllHomePost();
         initializeScreen();
 
-        homeRefValueEventListener = homeRef.child(userId).addValueEventListener(new ValueEventListener() {
+//        homeRefValueEventListener = homeRef.child(userId).addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                homeList.clear();
+//                if (dataSnapshot.exists()) {
+//                    postCount = 0;
+//                    homeList.clear();
+//                    postsList.clear();
+//                    fullSinglePostsList.clear();
+//                    for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
+//                        Home value = (Home) childDataSnapshot.getValue(Home.class);
+//                        final String[] idFromPostId = utility.getIdFromPostId(value.getPostId());
+//                        Log.e("Home list ", "id : " + idFromPostId[0] + "  type : " + value.getPostType());
+//                        homeList.add(value);
+//                        postsRef.child(idFromPostId[0]).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(DataSnapshot dataSnapshot) {
+//                                final Post value = dataSnapshot.getValue(Post.class);
+//                                postsList.add(value);
+//                                final FullSinglePost fullSinglePost = new FullSinglePost();
+//                                fullSinglePost.setUserId(value.getUserId());
+//                                fullSinglePost.setPostId(value.getPostId());
+//                                fullSinglePost.setContent(value.getContent());
+//                                fullSinglePost.setDate(value.getDate());
+//                                fullSinglePost.setLike(value.getLike());
+//                                fullSinglePost.setTime(value.getTime());
+//
+//                                postCount = postCount + 1;
+//
+//                                userRef.child(idFromPostId[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+//                                    @Override
+//                                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                                        User userVal = dataSnapshot.getValue(User.class);
+//                                        fullSinglePost.setUserName(userVal.getUserName());
+//                                        fullSinglePost.setUserProfilePic(userVal.getImage());
+//
+//                                        userDetailCount = userDetailCount + 1;
+//                                        likeRef.child(userIdByEmail).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
+//                                            @Override
+//                                            public void onDataChange(DataSnapshot dataSnapshot) {
+//                                                if (dataSnapshot.exists()) {
+//                                                    fullSinglePost.setLikeStatus(Boolean.TRUE);
+//                                                    fullSinglePostsList.add(fullSinglePost);
+//                                                } else {
+//                                                    fullSinglePost.setLikeStatus(Boolean.FALSE);
+//                                                    fullSinglePostsList.add(fullSinglePost);
+//                                                }
+//                                                likeStatusCount = likeStatusCount + 1;
+//                                                Log.e("Counter ", "counter called : " + postCount + " val " + postsList.size() + " hl " + homeList.size());
+//                                                if (postCount == homeList.size() && userDetailCount == homeList.size() && likeStatusCount == homeList.size()) {
+//                                                    Log.e("check Counter ", "called : ");
+//                                                    Collections.reverse(fullSinglePostsList);
+//                                                    postsListAdapter.notifyDataSetChanged();
+////                                                        rpostsListAdapter.notifyDataSetChanged();
+//                                                }
+//                                            }
+//
+//                                            @Override
+//                                            public void onCancelled(DatabaseError databaseError) {
+//
+//                                            }
+//                                        });
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onCancelled(DatabaseError databaseError) {
+//
+//                                    }
+//                                });
+//
+//                                Log.e("Post list ", "id : " + value.getContent() + "  image : " + value.getImage());
+////                                postCount = postCount + 1;
+////                                Log.e("Counter ","counter called : "+postCount+" val "+postsList.size()+" hl "+homeList.size());
+////
+////                                if(postCount >= homeList.size()){
+////                                    Log.e("check Counter ","called : ");
+////                                    postsRef.removeEventListener(this);
+////                                    Collections.reverse(postsList);
+////                                    postsListAdapter.notifyDataSetChanged();
+////                                }
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(DatabaseError databaseError) {
+//                            }
+//                        });
+//                    }
+//                    homeRef.removeEventListener(this);
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//            }
+//        });
+    }
+
+    public void loadAllHomePost(){
+        postDetailCount = 0;
+        commentCount = 0;
+        homeRef.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.e("homeAct ", "check 2");
                 homeList.clear();
-                if (dataSnapshot.exists()) {
-                    postCount = 0;
-                    homeList.clear();
-                    postsList.clear();
-                    fullSinglePostsList.clear();
-                    for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
-                        Home value = (Home) childDataSnapshot.getValue(Home.class);
-                        final String[] idFromPostId = utility.getIdFromPostId(value.getPostId());
-                        Log.e("Home list ", "id : " + idFromPostId[0] + "  type : " + value.getPostType());
-                        homeList.add(value);
-                        postsRef.child(idFromPostId[0]).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                final Post value = dataSnapshot.getValue(Post.class);
-                                postsList.add(value);
-                                final FullSinglePost fullSinglePost = new FullSinglePost();
-                                fullSinglePost.setUserId(value.getUserId());
-                                fullSinglePost.setPostId(value.getPostId());
-                                fullSinglePost.setContent(value.getContent());
-                                fullSinglePost.setDate(value.getDate());
-                                fullSinglePost.setImage(value.getImage());
-                                fullSinglePost.setLike(value.getLike());
-                                fullSinglePost.setTime(value.getTime());
-
-                                postCount = postCount + 1;
-
-                                userRef.child(idFromPostId[0]).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        User userVal = dataSnapshot.getValue(User.class);
-                                        fullSinglePost.setUserName(userVal.getUserName());
-                                        fullSinglePost.setUserProfilePic(userVal.getImage());
-
-                                        userDetailCount = userDetailCount + 1;
-                                        likeRef.child(userIdByEmail).child(value.getPostId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if (dataSnapshot.exists()) {
-                                                    fullSinglePost.setLikeStatus(Boolean.TRUE);
-                                                    fullSinglePostsList.add(fullSinglePost);
-                                                } else {
-                                                    fullSinglePost.setLikeStatus(Boolean.FALSE);
-                                                    fullSinglePostsList.add(fullSinglePost);
-                                                }
-                                                likeStatusCount = likeStatusCount + 1;
-                                                Log.e("Counter ", "counter called : " + postCount + " val " + postsList.size() + " hl " + homeList.size());
-                                                if (postCount == homeList.size() && userDetailCount == homeList.size() && likeStatusCount == homeList.size()) {
-                                                    Log.e("check Counter ", "called : ");
-                                                    Collections.reverse(fullSinglePostsList);
-                                                    postsListAdapter.notifyDataSetChanged();
-//                                                        rpostsListAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-
-                                Log.e("Post list ", "id : " + value.getContent() + "  image : " + value.getImage());
-//                                postCount = postCount + 1;
-//                                Log.e("Counter ","counter called : "+postCount+" val "+postsList.size()+" hl "+homeList.size());
-//
-//                                if(postCount >= homeList.size()){
-//                                    Log.e("check Counter ","called : ");
-//                                    postsRef.removeEventListener(this);
-//                                    Collections.reverse(postsList);
-//                                    postsListAdapter.notifyDataSetChanged();
-//                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        });
+                postsList.clear();
+                if(dataSnapshot.exists()){
+                    for(DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                        Home home = childDataSnapshot.getValue(Home.class);
+                        homeList.add(home);
+                        Collections.reverse(homeList);
                     }
-                    homeRef.removeEventListener(this);
+                    mFirebaseDatabase.getReference().removeEventListener(this);
+                    loadPostDetailsFromHome();
+                } else{
+
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
+
             }
         });
+    }
+
+    public void loadPostDetailsFromHome(){
+        if(postDetailCount < homeList.size()){
+            postsRef.child(homeList.get(postDetailCount).getOtherUserId()).
+                    child(homeList.get(postDetailCount).getPostId()).
+                    addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()){
+                                Post singlePost = dataSnapshot.getValue(Post.class);
+                                postsList.add(singlePost);
+                                postDetailCount++;
+                                if(homeList.size() == postDetailCount){
+                                    loadAllCommentCount();
+                                }else{
+                                    loadPostDetailsFromHome();
+                                }
+                            } else{
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+        }
+    }
+
+    public void loadAllCommentCount(){
+        if(commentCount < postsList.size()){
+            postsRef.child(postsList.get(commentCount).getUserId()).
+                    child(postsList.get(commentCount).getPostId()).
+                    child(Constant.FIREBASE_REFERENCE_COMMENT).
+                    addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()){
+                                int totalLastComment = (int) dataSnapshot.getChildrenCount();
+                                commentCountList.put(postsList.get(commentCount).getPostId(), totalLastComment);
+                                commentCount++;
+                                if(postsList.size() == commentCount){
+                                    printAllPostAndCommentCount();
+                                }else{
+                                    loadAllCommentCount();
+                                }
+                            } else{
+                                commentCountList.put(postsList.get(commentCount).getPostId(), 0);
+                                commentCount++;
+                                if(postsList.size() == commentCount){
+                                    printAllPostAndCommentCount();
+                                }else{
+                                    loadAllCommentCount();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            commentCountList.put(postsList.get(commentCount).getPostId(), 0);
+                            commentCount++;
+                            if(postsList.size() == commentCount){
+                                printAllPostAndCommentCount();
+                            }else{
+                                loadAllCommentCount();
+                            }
+                        }
+                    });
+        }
+    }
+
+    public void printAllPostAndCommentCount(){
+        for(int i = 0 ; i < homeList.size(); i++){
+            Log.e("Post "," User Id : "+postsList.get(i).getUserId()+" | post Id : "+ postsList.get(i).getPostId()+
+                    " | com count "+ commentCountList.get(postsList.get(i).getPostId()));
+        }
     }
 
     @Override
@@ -249,27 +360,6 @@ public class homeActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-    }
-
-    public void fetchPost(){
-        userIdByEmail = utility.emailToId(userEmailId);
-        homeRefValueEventListener = homeRef.child(userIdByEmail).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
-                        Home value = (Home) childDataSnapshot.getValue(Home.class);
-                    }
-                }else{
-
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
     public String getLoginStatus(){

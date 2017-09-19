@@ -47,7 +47,7 @@ public class userProfileActivity extends AppCompatActivity {
         utility = new Utility();
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_POST);
+        postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_POST);
         homeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_HOME);
         userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_USERS);
         likeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_LIKE);

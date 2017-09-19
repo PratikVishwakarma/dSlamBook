@@ -28,8 +28,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -52,11 +54,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import major.com.dslambook.Pojo.Friend;
 import major.com.dslambook.Pojo.Home;
 import major.com.dslambook.Pojo.Post;
+import major.com.dslambook.Pojo.PostImage;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.R;
 import major.com.dslambook.SignUpActivity;
@@ -65,14 +69,13 @@ import major.com.dslambook.Utility.Utility;
 
 import static java.security.AccessController.getContext;
 
-public class addPostActivity extends AppCompatActivity {
+public class addPostActivity extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mFirebaseAuth;
-    FirebaseAuth.AuthStateListener mAuthStateListener;
     public FirebaseUser user;
 
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference homeRef, friendRef, userRef;
+    private DatabaseReference mDatabaseRef, homeRef, friendRef, userRef;
     private FirebaseStorage mFirebaseStorage;
     private StorageReference storageReference;
 
@@ -80,17 +83,25 @@ public class addPostActivity extends AppCompatActivity {
     SharedPreferences sharedpreferences;
 
     ImageView showImageView;
-    ImageButton addImagebtn;
-    Button button_done_post;
     EditText editText_post_content;
+    private String bitmapCode, frameCode = "1";
 
-    public ProgressDialog progressDialog;
+    private Button button_frame_one, button_frame_two, button_frame_four;
+    private LinearLayout linearLayout_frame_one, linearLayout_frame_two, linearLayout_frame_four;
+    private int totalNoOfImages = 0;
 
-    private String idByEmail, postid = null, content_post = null, currentDate, currentTime;
+    ProgressDialog progress;
+
+    private String userId = "", postId = null, content_post = null, currentDate, currentTime;
+    private long lCurrentTime;
     public static final int GALLERY_INTENT_1 = 1;
     public static Uri uri;
     File file;
-    Bitmap bitmap = null;
+
+    Bitmap bitmap_1_1 = null, bitmap_2_1 = null, bitmap_2_2 = null, bitmap_4_1 = null, bitmap_4_2 = null, bitmap_4_3 = null, bitmap_4_4 = null;
+    Bitmap[] allBitmap = new Bitmap[]{};
+    ArrayList<String> allImageName = new ArrayList<String>();
+    private int noOfImage = 0, noOfImageAdded = 0;
     private Utility utility;
     Intent CamIntent, GalIntent, CropIntent ;
     public boolean uploadAllImagesStatus = Boolean.FALSE;
@@ -101,37 +112,35 @@ public class addPostActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_post);
 
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-        String getUserEmailid = sharedpreferences.getString(Constant.SHARED_PREFRENCE_USER_EMAIL_ID, null);
-
+        
         utility = new Utility();
-        uri = null;
 
-        if(getUserEmailid == null){
-            Toast.makeText(getApplicationContext(), "User is null", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(addPostActivity.this, SignUpActivity.class);
-            startActivity(intent);
-        } else{
-//            Toast.makeText(getApplicationContext(), "User id is "+getUserEmailid, Toast.LENGTH_SHORT).show();
-            idByEmail = utility.emailToId(getUserEmailid);
-        }
+        progress = new ProgressDialog(this);
+        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progress.setIndeterminate(true);
+        progress.setProgress(0);
+        progress.setCancelable(false);
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseStorage = FirebaseStorage.getInstance();
 
+        mDatabaseRef = mFirebaseDatabase.getReference();
         homeRef = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_HOME);
         friendRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_FRIEND);
         userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_USERS);
         storageReference = mFirebaseStorage.getReference();
-            initializeScreen();
 
-        addImagebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GetImageFromGallery();
+        String loginStatus = getLoginStatus();
+        if(loginStatus.equals(Constant.LOGIN_STATUS_LOGIN)) {
+            userId = getUserId();
+            if (userId.equals("") || userId == null){
+                goToSignupActivity();
             }
-        });
-
+        } else{
+            goToSignupActivity();
+        }
+            initializeScreen();
     }
 
     public void GetImageFromGallery(){
@@ -146,28 +155,11 @@ public class addPostActivity extends AppCompatActivity {
     }
 
     public void createPostId(){
-        Log.e("User email ", idByEmail);
-        final Query query = userRef.child(idByEmail);
-        Log.e("Refrence ", query+"");
-        userRef.child(idByEmail).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    long time= System.currentTimeMillis();
-                    User currentUser = dataSnapshot.getValue(User.class);
-                    Log.e("Inside getUser found", currentUser.getEmail()+ Constant.STRING_POSTID_DIFFERENTIATOR+time);
-                    postid = idByEmail+Constant.STRING_POSTID_DIFFERENTIATOR+time;
-                    upload_post(postid);
-                }else{
-                    user = null;
-                    Log.e("not found", user.getEmail());
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        final Query query = userRef.child(userId);
+        long time= System.currentTimeMillis();
+        postId = userId + Constant.STRING_POSTID_DIFFERENTIATOR + time;
+        Log.e("Post id created ", postId);
+        uploadPost(postId);
     }
 
     @Override
@@ -186,10 +178,10 @@ public class addPostActivity extends AppCompatActivity {
                 Uri data1 = data.getData();
                 String s = compressImage(data1.toString());
                 String filePath = getRealPathFromURI(s);
+
                 BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                 Bitmap dbitmap = BitmapFactory.decodeFile(filePath,bmOptions);
-                showImageView.setImageBitmap(dbitmap);
-                bitmap = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                loadImageToBitmap(dbitmap);
             }
         }
     }
@@ -199,165 +191,146 @@ public class addPostActivity extends AppCompatActivity {
         try {
             CropIntent = new Intent("com.android.camera.action.CROP");
             CropIntent.setDataAndType(uri, "image/*");
-
             CropIntent.putExtra("crop", "true");
-            CropIntent.putExtra("outputX", 600);
-            CropIntent.putExtra("outputY", 600);
-            CropIntent.putExtra("aspectX", 1);
-            CropIntent.putExtra("aspectY", 1);
+            if(bitmapCode.equals("2_1") || bitmapCode.equals("2_2")){
+                CropIntent.putExtra("aspectX", 9);
+                CropIntent.putExtra("aspectY", 16);
+            } else{
+                CropIntent.putExtra("outputX", 600);
+                CropIntent.putExtra("outputY", 600);
+                CropIntent.putExtra("aspectX", 1);
+                CropIntent.putExtra("aspectY", 1);
+            }
             CropIntent.putExtra("scaleUpIfNeeded", false); //true to change size
             CropIntent.putExtra("return-data", true);
             startActivityForResult(CropIntent, 1);
         } catch (ActivityNotFoundException e) {}
     }
 
-    public void upload_post(String nPostid) {
-        postid = nPostid;
-        final Uri auri = uri;
-        final Bitmap abitmaps = bitmap;
-//        progressDialog.setMessage("Uploading...");
-//        progressDialog.show();
-        datef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_DATE);
-        currentDate = datef.format(Calendar.getInstance().getTime());
-        timef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_TIME_WITH_SECONDS);
-        currentTime = timef.format(Calendar.getInstance().getTime());
-            if (auri != null) {
-                final String imageName = currentTime + "_img_.jpg";
-                StorageReference photoRef = mFirebaseStorage.getReference().child(Constant.FIREBASE_LOCATION_STORAGE_POSTIMAGE)
-                        .child(idByEmail).child(imageName);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                abitmaps.compress(Bitmap.CompressFormat.JPEG, 55, baos);
-                final byte[] data = baos.toByteArray();
-                UploadTask uploadTask = photoRef.putBytes(data);
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                        imageNameList.add(imageName);
-                        uploadAllImagesStatus = Boolean.TRUE;
-                        Post newPost = new Post(idByEmail, postid, content_post,imageName, currentTime, currentDate, 0);
-                        Task<Void> voidTask = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_POST).child(idByEmail)
-                                .child(postid).setValue(newPost);
-                        if(voidTask.isSuccessful()){
-                            Log.e("Total Images upload ", "Task of post successful");
-                        }
-                        Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_YOU, currentTime, currentDate);
-                        homeRef.child(idByEmail).child(postid).setValue(home).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        friendRef.child(idByEmail).addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
-                                                    Friend friend = childDataSnapshot.getValue(Friend.class);
-                                                    if(friend.getRequestType() == 3){
-                                                        Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_FRIEND, currentTime, currentDate);
-                                                        homeRef.child(friend.getOtherUserId()).child(postid).setValue(home);
-                                                    }
-                                                }
-                                                Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
-                                                Intent intent = new Intent(getApplicationContext(), homeActivity.class);
-                                                intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
-                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                                startActivity(intent);
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
-                                        });
-                                    }
-                                });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                });
-            } else{
-                final String imageName = "no_Image";
-                uploadAllImagesStatus = Boolean.TRUE;
-                Post newPost = new Post(idByEmail, postid, content_post,imageName, currentTime, currentDate, 0);
-                Task<Void> voidTask = mFirebaseDatabase.getReference().child(Constant.FIREBASE_LOCATION_POST)
-                        .child(idByEmail).child(postid).setValue(newPost);
-                if(voidTask.isSuccessful()){
-                    Log.e("Total Images upload ", "Task of post successful");
-                }
-                Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_YOU, currentTime, currentDate);
-                homeRef.child(idByEmail).child(postid).setValue(home).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        friendRef.child(idByEmail).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
-                                    Friend friend = childDataSnapshot.getValue(Friend.class);
-                                    if(friend.getRequestType() == 3){
-                                        Home home = new Home(postid, idByEmail, Constant.TYPE_POST_TYPE_POST_BY_FRIEND, currentTime, currentDate);
-                                        homeRef.child(friend.getOtherUserId()).child(postid).setValue(home);
-                                    }
-                                }
-                                Toast.makeText(getApplicationContext(), "Upload complete....", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(getApplicationContext(), homeActivity.class);
-                                intent.putExtra(Constant.INTENT_KEY_STRING_HOME_CALLING,Constant.INTENT_VALUE_STRING_HOME_CALLING_AFTER_POST);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                });
-            }
-//        progressDialog.dismiss();
+    public void uploadPost(String newPostId){
+        if(frameCode.equals("1")){
+            allBitmap = new Bitmap[]{bitmap_1_1};
+        } else if(frameCode.equals("2")){
+            allBitmap = new Bitmap[]{bitmap_2_1, bitmap_2_2};
+        } else if(frameCode.equals("4")){
+            allBitmap = new Bitmap[]{bitmap_4_1, bitmap_4_2, bitmap_4_3, bitmap_4_4};
         }
+        totalNoOfImages = allBitmap.length;
+        Log.e("No of images ", "Total len : "+totalNoOfImages);
+        uploadAllPostImage(newPostId);
+    }
+
+    public void uploadAllPostImage(final String postId){
+        progress.setMessage("Uploading...");
+        progress.show();
+        lCurrentTime = System.currentTimeMillis();
+        if(noOfImage < totalNoOfImages){
+            StorageReference photoRef = storageReference.child(Constant.FIREBASE_IMAGE_REFERENCE_POST).
+                    child(userId).
+                    child(postId).
+                    child(String.valueOf(lCurrentTime) + "_img.jpg");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            allBitmap[noOfImage].compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            final byte[] data = baos.toByteArray();
+            UploadTask uploadTask = photoRef.putBytes(data);
+            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    allImageName.add(String.valueOf(lCurrentTime) + "_img.jpg");
+                    Log.e("Images Name ", " "+ allImageName.get(noOfImage));
+                    noOfImage++;
+                    if(totalNoOfImages == noOfImage){
+                        Log.e("Images upload ", "Total len : "+ allImageName.size());
+                        noOfImage = 0;
+                        addPostEntry(postId);
+                        progress.setProgress(75);
+                    } else{
+                        uploadAllPostImage(postId);
+                    }
+                }
+            });
+        }
+    }
+
+    public void addPostEntry(final String postId){
+        DatabaseReference newPostRef = mDatabaseRef.child(Constant.FIREBASE_REFERENCE_POST).
+                child(userId).
+                child(postId);
+        datef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_DATE);
+        timef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_TIME);
+        currentDate = datef.format(Calendar.getInstance().getTime());
+        currentTime = timef.format(Calendar.getInstance().getTime());
+        Post newPost = new Post(userId, postId, "", currentTime, currentDate, 0, totalNoOfImages);
+
+        newPostRef.setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+//                  add the images entry
+                addImageEntryInPost(postId);
+            }
+        });
+    }
+
+    public void addImageEntryInPost(final String postId){
+        if(noOfImageAdded < allImageName.size()){
+            String imageId = allImageName.get(noOfImageAdded).toString().replace("_img.jpg","");
+            DatabaseReference newImageEntry = mDatabaseRef.child(Constant.FIREBASE_REFERENCE_POST).
+                    child(userId).
+                    child(postId).
+                    child("image").
+                    child(imageId);
+            PostImage newPostImage = new PostImage(allImageName.get(noOfImageAdded), 0);
+            newImageEntry.setValue(newPostImage).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+//                     add the images entry
+                    noOfImageAdded++;
+                    if(allImageName.size() == noOfImageAdded){
+                        Log.e("Images entry ", " done");
+                        noOfImageAdded = 0;
+                        allImageName.clear();
+                        addToUsersHomeEntry(postId);
+                    } else{
+//                        add images entry into post
+                        addImageEntryInPost(postId);
+                    }
+                }
+            });
+        }else{
+            progress.cancel();
+            Log.e("Upd cond fail ", " "+ noOfImage+"");
+        }
+    }
+
+    public void addToUsersHomeEntry(final String postId){
+        DatabaseReference newPostRef = mDatabaseRef.child(Constant.FIREBASE_REFERENCE_HOME).
+                child(userId).
+                child(postId);
+        Home newHomePost = new Home(postId, userId);
+
+        newPostRef.setValue(newHomePost).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+//                add into home
+                progress.cancel();
+                goToHomeActivity();
+            }
+        });
+    }
+
 
     public void initializeScreen(){
-        addImagebtn = (ImageButton) findViewById(R.id.imageButton_add_image);
 
-        showImageView = (ImageView) findViewById(R.id.imageView_post_image);
+        button_frame_one = (Button) findViewById(R.id.addPost_button_one_pic_frame);
+        button_frame_two = (Button) findViewById(R.id.addPost_button_two_pic_frame);
+        button_frame_four = (Button) findViewById(R.id.addPost_button_four_pic_frame);
 
-        button_done_post = (Button) findViewById(R.id.button_post);
+        linearLayout_frame_one = (LinearLayout) findViewById(R.id.addPost_linear_layout_frame_one);
+        linearLayout_frame_two = (LinearLayout) findViewById(R.id.addPost_linear_layout_frame_two);
+        linearLayout_frame_four = (LinearLayout) findViewById(R.id.addPost_linear_layout_frame_four);
 
-        editText_post_content = (EditText) findViewById(R.id.editText_post_content);
 
-        progressDialog = new ProgressDialog(getApplicationContext());
-
-        button_done_post.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(content_post == null && uri == null){
-                    Toast.makeText(getApplicationContext(), "Add media or text to post", Toast.LENGTH_SHORT).show();
-                } else{
-//                    Toast.makeText(getApplicationContext(), content_post+" not null post "+uri, Toast.LENGTH_SHORT).show();
-                    button_done_post.setVisibility(View.INVISIBLE);
-                    content_post = editText_post_content.getText().toString();
-                    createPostId();
-                }
-            }
-        });
-
-        editText_post_content.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(s.toString().length() == 0){
-                    content_post = null;
-//                    Toast.makeText(getApplicationContext(), "c is "+content_post, Toast.LENGTH_SHORT).show();
-                }else{
-                    content_post = editText_post_content.getText().toString();
-                }
-            }
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
+//        editText_post_content = (EditText) findViewById(R.id.editText_post_content);
     }
     public String compressImage(String imageUri) {
 
@@ -518,5 +491,142 @@ public class addPostActivity extends AppCompatActivity {
         return inSampleSize;
     }
 
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.addPost_button_one_pic_frame:
+                setFramCode("1");
+                linearLayout_frame_one.setVisibility(View.VISIBLE);
+                linearLayout_frame_two.setVisibility(View.GONE);
+                linearLayout_frame_four.setVisibility(View.GONE);
+                break;
+            case R.id.addPost_button_two_pic_frame:
+                setFramCode("2");
+                linearLayout_frame_one.setVisibility(View.GONE);
+                linearLayout_frame_two.setVisibility(View.VISIBLE);
+                linearLayout_frame_four.setVisibility(View.GONE);
+                break;
+            case R.id.addPost_button_four_pic_frame:
+                setFramCode("4");
+                linearLayout_frame_one.setVisibility(View.GONE);
+                linearLayout_frame_two.setVisibility(View.GONE);
+                linearLayout_frame_four.setVisibility(View.VISIBLE);
+                break;
+            case R.id.addPost_imageview_one_one:
+                setImageViewAndBitmap(id, "1_1");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_two_one:
+                setImageViewAndBitmap(id, "2_1");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_two_two:
+                setImageViewAndBitmap(id, "2_2");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_four_one:
+                setImageViewAndBitmap(id, "4_1");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_four_two:
+                setImageViewAndBitmap(id, "4_2");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_four_three:
+                setImageViewAndBitmap(id, "4_3");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_imageview_four_four:
+                setImageViewAndBitmap(id, "4_4");
+                GetImageFromGallery();
+                break;
+            case R.id.addPost_button_post:
+                if(frameCode.equals("1")){
+                    if(bitmap_1_1 == null){
+                        printToast("Select image to upload");
+                    }else{
+                        createPostId();
+                    }
+                } else if(frameCode.equals("2")){
+                    if(bitmap_2_1 == null || bitmap_2_2 == null){
+                        printToast("Need all 2 images to upload");
+                    }else{
+                        createPostId();
+                    }
+                } else if(frameCode.equals("4")){
+                    if(bitmap_4_1 == null || bitmap_4_2 == null || bitmap_4_3 == null || bitmap_4_4 == null){
+                        printToast("Need all 4 images to upload");
+                    }else{
+                        createPostId();
+                    }
+                }
+                break;
+        }
+    }
+
+    public void setImageViewAndBitmap(int imageViewId, String frameCode){
+        showImageView = (ImageView) findViewById(imageViewId);
+        bitmapCode = frameCode;
+    }
+
+    public void setFramCode(String Code){
+        frameCode = Code;
+    }
+    public void loadImageToBitmap(Bitmap bitmap){
+        showImageView.setImageBitmap(bitmap);
+        switch (bitmapCode){
+            case "1_1":
+                bitmap_1_1 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "2_1":
+                bitmap_2_1 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "2_2":
+                bitmap_2_2 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "4_1":
+                bitmap_4_1 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "4_2":
+                bitmap_4_2 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "4_3":
+                bitmap_4_3 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            case "4_4":
+                bitmap_4_4 = ((BitmapDrawable)showImageView.getDrawable()).getBitmap();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public String getLoginStatus(){
+        return sharedpreferences.getString(Constant.SHARED_PREFRENCE_LOGIN_STATUS, Constant.LOGIN_STATUS_LOGOUT);
+    }
+    public String getUserId(){
+        return sharedpreferences.getString(Constant.SHARED_PREFRENCE_USER_ID, "");
+    }
+    public void printToast(String message){
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void goToSignupActivity(){
+        Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
+    }
+    public void goToHomeActivity(){
+        Intent intent = new Intent(getApplicationContext(), homeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
+    }
 }
 

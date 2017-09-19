@@ -7,43 +7,186 @@
     android:layout_height="wrap_content"
     android:scrollbars="vertical"
     android:padding="12dp"
-    android:background="@drawable/registration_page_background"
+    android:background="@color/white"
     tools:context="major.com.dslambook.UI.addPostActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentTop="true">
+        android:scrollbars="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="What's in mind?"/>
-        <EditText
-            android:id="@+id/editText_post_content"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:scrollbars="vertical"
-            android:background="#11000000"/>
-        <ImageButton
-            android:id="@+id/imageButton_add_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/dsb_ic_add_image_icon"/>
-        <ImageView
-            android:id="@+id/imageView_post_image"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"/>
-    </LinearLayout>
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                android:background="@drawable/round"
+                android:weightSum="3">
+                <Button
+                    android:id="@+id/addPost_button_one_pic_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="1 Pic"
+                    android:onClick="onClick"/>
+                <Button
+                    android:id="@+id/addPost_button_two_pic_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="2 Pics"
+                    android:onClick="onClick"/>
+                <Button
+                    android:id="@+id/addPost_button_four_pic_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="4 Pics"
+                    android:onClick="onClick"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/addPost_linear_layout_frame_one"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:visibility="visible"
+                    android:id="@+id/addPost_imageview_one_one"
+                    style="@style/AddPostImageView"
+                    android:layout_marginTop="18dp"
+                    android:layout_height="400dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/addPost_linear_layout_frame_two"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:weightSum="2"
+                android:visibility="gone"
+                android:orientation="horizontal">
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border"
+                    android:layout_weight="1"
+                    android:padding="1dp">
+                    <ImageView
+                        android:id="@+id/addPost_imageview_two_one"
+                        style="@style/AddPostImageView"
+                        android:layout_height="400dp"/>
+                    <FrameLayout
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_alignParentBottom="true"
+                        android:background="@drawable/like_circle"/>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border"
+                    android:layout_weight="1"
+                    android:padding="1dp">
+                    <ImageView
+                        android:id="@+id/addPost_imageview_two_two"
+                        style="@style/AddPostImageView"
+                        android:layout_height="400dp"/>
+                    <FrameLayout
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/like_circle"/>
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/addPost_linear_layout_frame_four"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:weightSum="2">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:weightSum="2"
+                    android:orientation="horizontal">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border"
+                        android:layout_weight="1"
+                        android:padding="1dp">
+                        <ImageView
+                            android:id="@+id/addPost_imageview_four_one"
+                            style="@style/AddPostImageView"
+                            android:layout_height="200dp"/>
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border"
+                        android:layout_weight="1"
+                        android:padding="1dp">
+                        <ImageView
+                            android:id="@+id/addPost_imageview_four_two"
+                            style="@style/AddPostImageView"
+                            android:layout_height="200dp"/>
+                    </RelativeLayout>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:weightSum="2"
+                    android:orientation="horizontal">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border"
+                        android:layout_weight="1"
+                        android:padding="1dp">
+                        <ImageView
+                            android:id="@+id/addPost_imageview_four_three"
+                            style="@style/AddPostImageView"
+                            android:layout_height="200dp"
+                            android:onClick="onClick"/>
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border"
+                        android:layout_weight="1"
+                        android:padding="1dp">
+                        <ImageView
+                            android:id="@+id/addPost_imageview_four_four"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:scaleType="centerCrop"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/placeholder_picture"
+                            android:onClick="onClick"/>
+                    </RelativeLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
     <Button
-        android:id="@+id/button_post"
+        android:id="@+id/addPost_button_post"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="4dp"
         android:text="Post"
         android:layout_alignParentBottom="true"
+        android:onClick="onClick"
         android:background="@drawable/com_facebook_button_background"/>
 </RelativeLayout>

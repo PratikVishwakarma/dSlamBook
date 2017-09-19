@@ -1,25 +1,31 @@
 package major.com.dslambook;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
+import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,11 +46,12 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.UI.homeActivity;
@@ -71,13 +78,19 @@ public class SignUpActivity extends AppCompatActivity{
     private Bitmap userPicBitmap = null;
     //UI elements
     TextView username, name, bio;
-    ImageView profile_pic;
+    ImageView profile_pic, edit_profile_pic;
     Button button_next;
 
     ProgressDialog progress;
     public FirebaseUser user;
 
     private boolean usernameAvailablestatus = false;
+
+    public static final int GALLERY_INTENT_1 = 100, READ_EXTERNAL_STORAGE_PERMISSION_CONSTANT = 4, WRITE_EXTERNAL_STORAGE_PERMISSION_CONSTANT = 5;
+    public static Uri uri;
+    File file;
+    Intent CamIntent, GalIntent, CropIntent ;
+
 
     private Utility utility;
 
@@ -198,19 +211,24 @@ public class SignUpActivity extends AppCompatActivity{
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
 
-
-
     public void initializeScreen(){
         button_next = (Button) findViewById(R.id.button_next);
         username =(TextView) findViewById(R.id.signup_editText_username);
         name =(TextView) findViewById(R.id.signup_editText_name);
         bio =(TextView) findViewById(R.id.signup_editText_bio);
+        edit_profile_pic = (ImageView) findViewById(R.id.imageView_edit_profile_pic);
         profile_pic = (ImageView) findViewById(R.id.imageView_profile_pic);
 
         button_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 createUserProcess(username.getText().toString().toLowerCase());
+            }
+        });
+        edit_profile_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkPermission();
             }
         });
     }
@@ -276,10 +294,12 @@ public class SignUpActivity extends AppCompatActivity{
                 if(userName.contains(" ") || userName.contains("@") || userName.contains("#") ||
                         userName.contains("%") || userName.contains(".") || userName.contains("$") ||
                         userName.contains("[") || userName.contains("]") || userName.contains("/") ||
+                        userName.contains("(") || userName.contains(")") || userName.contains(",") ||
+                        userName.contains("<") || userName.contains(">") || userName.contains("?") ||
                         userName.contains("*") || userName.contains("^") || userName.contains("+")){
                     // un supported character
                     usernameAvailablestatus = false;
-                    errorMsgUserName = "space , @, #, %, ., $, [, ], /, *, ^, + not allow in username";
+                    errorMsgUserName = "space , @, #, %, ., $, [, ], (, ), /, *, ^, +, <, >, ? or , not allow in username";
                 } else {
                     for (int i = 0; i < userName.length(); i++){
                         int chk = (int)userName.charAt(i);
@@ -339,5 +359,239 @@ public class SignUpActivity extends AppCompatActivity{
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
+    }
+
+
+    public void GetImageFromGallery(){
+        GalIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(Intent.createChooser(GalIntent, "Select Image From Gallery"), 200);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            ImageCropFunction();
+        } else if (requestCode == 200) {
+            if (data != null) {
+                uri = data.getData();
+                ImageCropFunction();
+            }
+        } else if (requestCode == 100) {
+            if (data != null) {
+                Log.e("profilepic debug ", "called 1 ");
+                Uri data1 = data.getData();
+                String s = compressImage(data1.toString());
+                String filePath = getRealPathFromURI(s);
+                Log.e("profile file path ", "Path = "+filePath);
+
+                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                Bitmap dbitmap = BitmapFactory.decodeFile(filePath,bmOptions);
+                profile_pic.setImageBitmap(dbitmap);
+                userPicBitmap = ((BitmapDrawable)profile_pic.getDrawable()).getBitmap();
+            }
+        }
+    }
+
+    public void ImageCropFunction() {
+        // Image Crop Code
+        try {
+            CropIntent = new Intent("com.android.camera.action.CROP");
+            CropIntent.setDataAndType(uri, "image/*");
+
+            CropIntent.putExtra("crop", "true");
+            CropIntent.putExtra("outputX", 600);
+            CropIntent.putExtra("outputY", 600);
+            CropIntent.putExtra("aspectX", 1);
+            CropIntent.putExtra("aspectY", 1);
+            CropIntent.putExtra("scaleUpIfNeeded", false); //true to change size
+            CropIntent.putExtra("return-data", true);
+            startActivityForResult(CropIntent, 100);
+        } catch (ActivityNotFoundException e) {}
+    }
+
+    public String compressImage(String imageUri) {
+
+        String filePath = getRealPathFromURI(imageUri);
+        Bitmap scaledBitmap = null;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+//      by setting this field as true, the actual bitmap pixels are not loaded in the memory. Just the bounds are loaded. If
+//      you try the use the bitmap here, you will get null.
+        options.inJustDecodeBounds = true;
+        Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
+
+        int actualHeight = options.outHeight;
+        int actualWidth = options.outWidth;
+
+//      max Height and width values of the compressed image is taken as 816x612
+
+        float maxHeight = 816.0f;
+        float maxWidth = 612.0f;
+        float imgRatio = actualWidth / actualHeight;
+        float maxRatio = maxWidth / maxHeight;
+
+//      width and height values are set maintaining the aspect ratio of the image
+
+        if (actualHeight > maxHeight || actualWidth > maxWidth) {
+            if (imgRatio < maxRatio) {
+                imgRatio = maxHeight / actualHeight;
+                actualWidth = (int) (imgRatio * actualWidth);
+                actualHeight = (int) maxHeight;
+            } else if (imgRatio > maxRatio) {
+                imgRatio = maxWidth / actualWidth;
+                actualHeight = (int) (imgRatio * actualHeight);
+                actualWidth = (int) maxWidth;
+            } else {
+                actualHeight = (int) maxHeight;
+                actualWidth = (int) maxWidth;
+            }
+        }
+
+//      setting inSampleSize value allows to load a scaled down version of the original image
+
+        options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
+
+//      inJustDecodeBounds set to false to load the actual bitmap
+        options.inJustDecodeBounds = false;
+
+//      this options allow android to claim the bitmap memory if it runs low on memory
+        options.inPurgeable = true;
+        options.inInputShareable = true;
+        options.inTempStorage = new byte[16 * 1024];
+
+        try {
+//          load the bitmap from its path
+            bmp = BitmapFactory.decodeFile(filePath, options);
+        } catch (OutOfMemoryError exception) {
+            exception.printStackTrace();
+
+        }
+        try {
+            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
+        } catch (OutOfMemoryError exception) {
+            exception.printStackTrace();
+        }
+
+        float ratioX = actualWidth / (float) options.outWidth;
+        float ratioY = actualHeight / (float) options.outHeight;
+        float middleX = actualWidth / 2.0f;
+        float middleY = actualHeight / 2.0f;
+
+        Matrix scaleMatrix = new Matrix();
+        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+
+        Canvas canvas = new Canvas(scaledBitmap);
+        canvas.setMatrix(scaleMatrix);
+        canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
+
+//      check the rotation of the image and display it properly
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(filePath);
+
+            int orientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION, 0);
+            Log.d("EXIF", "Exif: " + orientation);
+            Matrix matrix = new Matrix();
+            if (orientation == 6) {
+                matrix.postRotate(90);
+                Log.d("EXIF", "Exif: " + orientation);
+            } else if (orientation == 3) {
+                matrix.postRotate(180);
+                Log.d("EXIF", "Exif: " + orientation);
+            } else if (orientation == 8) {
+                matrix.postRotate(270);
+                Log.d("EXIF", "Exif: " + orientation);
+            }
+            scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0,
+                    scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix,
+                    true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        FileOutputStream out = null;
+        String filename = getFilename();
+        try {
+            out = new FileOutputStream(filename);
+
+//          write the compressed bitmap at the destination specified by filename.
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return filename;
+
+    }
+
+    public String getFilename() {
+        File file = new File(Environment.getExternalStorageDirectory().getPath(), "MyFolder/Images");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        String uriSting = (file.getAbsolutePath() + "/" + System.currentTimeMillis() + ".jpg");
+        return uriSting;
+
+    }
+
+    private String getRealPathFromURI(String contentURI) {
+        Uri contentUri = Uri.parse(contentURI);
+        Cursor cursor = getContentResolver().query(contentUri, null, null, null, null);
+        if (cursor == null) {
+            return contentUri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            return cursor.getString(index);
+        }
+    }
+
+    public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+        }
+        final float totalPixels = width * height;
+        final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+        while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+            inSampleSize++;
+        }
+
+        return inSampleSize;
+    }
+
+    public void checkPermission(){
+        if (ActivityCompat.checkSelfPermission(SignUpActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(SignUpActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                ActivityCompat.requestPermissions(SignUpActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                READ_EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+            } else{
+                ActivityCompat.requestPermissions(SignUpActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+            }
+        } else {
+            if (ActivityCompat.checkSelfPermission(SignUpActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(SignUpActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(SignUpActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+                } else{
+                    ActivityCompat.requestPermissions(SignUpActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+                }
+            } else{
+                GetImageFromGallery();
+            }
+        }
     }
 }

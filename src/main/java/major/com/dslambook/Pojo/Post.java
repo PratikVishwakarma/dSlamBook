@@ -10,19 +10,20 @@ public class Post {
     public String content;
     public String time;
     public String date;
-    public String image;
-    public int  like;
+    public int like;
+    public int totalImages;
+
     public Post() {
     }
 
-    public Post(String userId, String postId, String content, String image, String time, String date, int like) {
+    public Post(String userId, String postId, String content, String time, String date, int like, int totalImages) {
         this.userId = userId;
         this.postId = postId;
         this.content = content;
-        this.image = image;
         this.time = time;
         this.date = date;
         this.like = like;
+        this.totalImages = totalImages;
     }
 
     public String getUserId() {
@@ -37,10 +38,6 @@ public class Post {
         return content;
     }
 
-    public String getImage() {
-        return image;
-    }
-
     public String getTime() {
         return time;
     }
@@ -53,4 +50,7 @@ public class Post {
         return like;
     }
 
+    public int getTotalImages() {
+        return totalImages;
+    }
 }

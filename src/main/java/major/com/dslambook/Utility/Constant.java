@@ -11,13 +11,16 @@ public class Constant {
      */
 
     public static final String FIREBASE_REFERENCE_USERS = "users";
-    public static final String FIREBASE_LOCATION_POST= "Post";
+    public static final String FIREBASE_REFERENCE_POST= "Post";
+    public static final String FIREBASE_REFERENCE_HOME = "home";
     public static final String FIREBASE_LOCATION_HOME = "home";
     public static final String FIREBASE_LOCATION_FRIEND = "friend";
     public static final String FIREBASE_LOCATION_LIKE = "like";
     public static final String FIREBASE_LOCATION_CHAT = "chat";
+    public static final String FIREBASE_REFERENCE_COMMENT = "comment";
 
     public static final String FIREBASE_IMAGE_REFERENCE_USER = "user";
+    public static final String FIREBASE_IMAGE_REFERENCE_POST = "post";
     public static final String FIREBASE_LOCATION_STORAGE_POSTIMAGE = "postImage";
     public static final String FIREBASE_LOCATION_STORAGE_DISPLAYPICTURE = "displayPicture";
 
@@ -36,7 +39,7 @@ public class Constant {
     /*
     * Constants for formats like time and date
     * */
-    public static final String FORMATE_ADD_POST_DATE = "d-MMM-yyyy";
+    public static final String FORMATE_ADD_POST_DATE = "dd-MMM-yyyy";
     public static final String FORMATE_ADD_POST_TIME = "HH:mm";
     public static final String FORMATE_ADD_POST_TIME_WITH_SECONDS = "HH:mm:ss";
 

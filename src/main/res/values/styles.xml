@@ -32,12 +32,23 @@
     </style>
     <style name="EdittextStyle">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">50dp</item>
         <item name="android:layout_margin">4dp</item>
         <item name="android:paddingLeft">8dp</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColorHint">@color/white</item>
         <item name="android:background">@color/transparent</item>
+    </style>
+
+    <!--Add post page style-->
+
+    <style name="AddPostImageView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:src">@drawable/placeholder_picture</item>
+        <item name="android:onClick">onClick</item>
     </style>
 </resources>

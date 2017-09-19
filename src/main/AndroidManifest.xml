@@ -16,15 +16,18 @@
         <activity android:name=".SignUpActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             />
-        <activity android:name=".UI.homeActivity">
+        <activity android:name=".UI.homeActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".UI.addPostActivity" />
-        <activity android:name=".UI.searchUserActivity" />
+        <activity android:name=".UI.addPostActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
+        <activity android:name=".UI.searchUserActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
         <activity android:name=".UI.otherProfileActivity" />
         <activity android:name=".UI.userProfileActivity" />
         <activity android:name=".UI.singleChatActivity"
