@@ -159,10 +159,10 @@ public class SignUpActivity extends AppCompatActivity{
                                 Log.e("SIN user ", "count is "+ dataSnapshot.getChildrenCount());
                                 for (DataSnapshot allUser: dataSnapshot.getChildren()){
                                     User value = allUser.getValue(User.class);
-                                    Log.e("SIN user ", "user is "+ value.getUserName());
+                                    Log.e("SIN user ", "user is "+ value.getUserId());
                                     Log.e("SIN user ", "email is "+ value.getEmail());
-                                    printToast(value.getUserName().toString());
-                                    setUserId(value.getUserName(), value.getEmail());
+                                    printToast(value.getUserId().toString());
+                                    setUserId(value.getUserId(), value.getEmail());
                                     goToHomeActivity();
                                 }
                             } else{

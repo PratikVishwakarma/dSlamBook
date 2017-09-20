@@ -9,16 +9,16 @@ import android.os.Parcelable;
 
 public class User implements Parcelable {
 
-    public String name, userName, email, dob, gender, image, dateAndTime, aboutMe;
+    public String name, userId, email, dob, gender, image, dateAndTime, aboutMe;
     public int isProvideBasicInformation;
 
     public User() {
     }
 
-    public User(String name, String userName, String email, String dob, String gender, String image, String dateAndTime,
+    public User(String name, String userId, String email, String dob, String gender, String image, String dateAndTime,
                 int isProvideBasicInformation, String aboutMe) {
         this.name = name;
-        this.userName = userName;
+        this.userId = userId;
         this.email = email;
         this.dob = dob;
         this.gender = gender;
@@ -30,7 +30,7 @@ public class User implements Parcelable {
 
     protected User(Parcel in) {
         name = in.readString();
-        userName = in.readString();
+        userId = in.readString();
         email = in.readString();
         dob = in.readString();
         gender = in.readString();
@@ -56,8 +56,8 @@ public class User implements Parcelable {
         return name;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserId() {
+        return userId;
     }
 
     public String getEmail() {
@@ -96,7 +96,7 @@ public class User implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
-        dest.writeString(userName);
+        dest.writeString(userId);
         dest.writeString(email);
         dest.writeString(dob);
         dest.writeString(gender);

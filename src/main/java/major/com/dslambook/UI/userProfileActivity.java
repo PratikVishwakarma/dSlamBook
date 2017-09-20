@@ -61,7 +61,7 @@ public class userProfileActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
 
-                textViewUserUsername.setText(user.getUserName());
+                textViewUserUsername.setText(user.getUserId());
                 textViewUserDateOfBirth.setText(user.getDob());
                 Picasso.with(getApplicationContext())
                         .load(user.getImage())
@@ -93,7 +93,7 @@ public class userProfileActivity extends AppCompatActivity {
         textViewUserDateOfBirth = (TextView) findViewById(R.id.textView_userProfile_dateOfBirth);
 
 //        postsListView = (ListView) findViewById(R.id.listView_posts_list);
-//        postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.home_post_list_item, fullSinglePostsList);
+//        postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.item_post_one, fullSinglePostsList);
 //        postsListView.setAdapter(postsListAdapter);
 
         imageViewAddPost.setOnClickListener(new View.OnClickListener() {

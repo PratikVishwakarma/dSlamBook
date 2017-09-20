@@ -151,10 +151,10 @@ public class searchUserActivity extends AppCompatActivity {
                     Log.e("Search User ","search User data exist "+dataSnapshot.getChildrenCount());
                     for(DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
                         User value = childDataSnapshot.getValue(User.class);
-                        Log.e("Search User ","User name "+value.getUserName());
-                        String s1 = value.getUserName();
+                        Log.e("Search User ","User name "+value.getUserId());
+                        String s1 = value.getUserId();
                         if(Pattern.compile(Pattern.quote(username), Pattern.CASE_INSENSITIVE).matcher(s1).find()){
-                            Log.e("Search User ","search User By Name called." + value.getUserName());
+                            Log.e("Search User ","search User By Name called." + value.getUserId());
                             usersList.add(value);
                         }
                     }

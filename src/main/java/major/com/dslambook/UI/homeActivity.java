@@ -5,13 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,21 +16,21 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import major.com.dslambook.Adapter.PostsListRecyclerAdapter;
-import major.com.dslambook.Pojo.FullSinglePost;
 import major.com.dslambook.Pojo.Home;
+import major.com.dslambook.Pojo.Like;
 import major.com.dslambook.Pojo.Post;
+import major.com.dslambook.Pojo.PostImage;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.Adapter.PostsListAdapter;
 import major.com.dslambook.R;
-import major.com.dslambook.Service.NotificationService;
 import major.com.dslambook.SignUpActivity;
 import major.com.dslambook.Utility.Constant;
 import major.com.dslambook.Utility.Utility;
@@ -59,12 +55,12 @@ public class homeActivity extends AppCompatActivity {
     private PostsListRecyclerAdapter rpostsListAdapter;
     private ArrayList<Post> postsList = new ArrayList<>();
     private ArrayList<Home> homeList = new ArrayList<>();
+    private Map<String, User> userList = new HashMap<>();
+    private Map<String, String> postImageList = new HashMap<>();
     private Map<String, Integer> commentCountList = new HashMap<>();
-    private ArrayList<FullSinglePost> fullSinglePostsList = new ArrayList<>();
-    int postCount, userDetailCount, likeStatusCount;
+    private Map<String, Like> likeStatusList = new HashMap<>();
 
-    int postDetailCount = 0, commentCount = 0;
-    String userEmailId;
+    int postDetailCount = 0, commentCount = 0, likeCount = 0, userCount = 0, postImageCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +75,7 @@ public class homeActivity extends AppCompatActivity {
         postsRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_POST);
         homeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_HOME);
         userRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_USERS);
-        likeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_LOCATION_LIKE);
+        likeRef = mFirebaseDatabase.getReference(Constant.FIREBASE_REFERENCE_LIKE);
 
         String loginStatus = getLoginStatus();
         if(loginStatus.equals(Constant.LOGIN_STATUS_LOGIN)) {
@@ -193,29 +189,32 @@ public class homeActivity extends AppCompatActivity {
 
     public void loadAllHomePost(){
         postDetailCount = 0;
+        postImageCount = 0;
         commentCount = 0;
+        likeCount = 0;
+        userCount = 0;
+        Log.e("homeAct ", "check 1");
         homeRef.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e("homeAct ", "check 2");
                 homeList.clear();
                 postsList.clear();
+                userList.clear();
+                commentCountList.clear();
+                postImageList.clear();
+                likeStatusList.clear();
                 if(dataSnapshot.exists()){
                     for(DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
                         Home home = childDataSnapshot.getValue(Home.class);
                         homeList.add(home);
-                        Collections.reverse(homeList);
                     }
+                    Collections.reverse(homeList);
                     mFirebaseDatabase.getReference().removeEventListener(this);
                     loadPostDetailsFromHome();
-                } else{
-
-                }
+                } else{}
             }
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         });
     }
 
@@ -231,9 +230,67 @@ public class homeActivity extends AppCompatActivity {
                                 postsList.add(singlePost);
                                 postDetailCount++;
                                 if(homeList.size() == postDetailCount){
-                                    loadAllCommentCount();
+                                    loadPostImageDetailsFromPost();
                                 }else{
                                     loadPostDetailsFromHome();
+                                }
+                            } else{}
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    });
+        }
+    }
+
+    public void loadPostImageDetailsFromPost(){
+        if(postImageCount < homeList.size()){
+            postsRef.child(homeList.get(postImageCount).getOtherUserId()).
+                    child(homeList.get(postImageCount).getPostId()).
+                    child("image").
+                    addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()){
+                                String allImageWithLike = "";
+                                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                                    PostImage postImage = childDataSnapshot.getValue(PostImage.class);
+                                    allImageWithLike = allImageWithLike + postImage.getImage() + Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR+
+                                            + postImage.getLike() + Constant.STRING_POST_IMAGE_DIFFERENTIATOR;
+                                }
+                                postImageList.put(postsList.get(postImageCount).getPostId(), allImageWithLike);
+                                postImageCount++;
+                                if(homeList.size() == postImageCount){
+                                    loadUserDetailsFromHome();
+                                }else{
+                                    loadPostImageDetailsFromPost();
+                                }
+                            } else{
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+        }
+    }
+
+    public void loadUserDetailsFromHome(){
+        if(userCount < homeList.size()){
+            userRef.child(homeList.get(userCount).getOtherUserId()).
+                    addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()){
+                                User user = dataSnapshot.getValue(User.class);
+                                userList.put(homeList.get(userCount).getPostId(),user);
+                                userCount++;
+                                if(homeList.size() == userCount){
+                                    loadAllCommentCount();
+                                }else{
+                                    loadUserDetailsFromHome();
                                 }
                             } else{
 
@@ -261,7 +318,7 @@ public class homeActivity extends AppCompatActivity {
                                 commentCountList.put(postsList.get(commentCount).getPostId(), totalLastComment);
                                 commentCount++;
                                 if(postsList.size() == commentCount){
-                                    printAllPostAndCommentCount();
+                                    loadPostLikeStatus();
                                 }else{
                                     loadAllCommentCount();
                                 }
@@ -269,11 +326,12 @@ public class homeActivity extends AppCompatActivity {
                                 commentCountList.put(postsList.get(commentCount).getPostId(), 0);
                                 commentCount++;
                                 if(postsList.size() == commentCount){
-                                    printAllPostAndCommentCount();
+                                    loadPostLikeStatus();
                                 }else{
                                     loadAllCommentCount();
                                 }
                             }
+                            postsRef.removeEventListener(this);
                         }
 
                         @Override
@@ -281,7 +339,7 @@ public class homeActivity extends AppCompatActivity {
                             commentCountList.put(postsList.get(commentCount).getPostId(), 0);
                             commentCount++;
                             if(postsList.size() == commentCount){
-                                printAllPostAndCommentCount();
+                                loadPostLikeStatus();
                             }else{
                                 loadAllCommentCount();
                             }
@@ -290,11 +348,69 @@ public class homeActivity extends AppCompatActivity {
         }
     }
 
+    public void loadPostLikeStatus(){
+        if(likeCount < postsList.size()){
+            likeRef.child(postsList.get(likeCount).getPostId()).
+                    addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()){
+                                Like likePost = dataSnapshot.getValue(Like.class);
+                                likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
+                                likeCount++;
+                                if(postsList.size() == likeCount){
+                                    printAllPostAndCommentCount();
+                                }else{
+                                    loadPostLikeStatus();
+                                }
+                            } else{
+                                Like likePost = new Like("NA" ,"NA", "NA", "NA");
+                                likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
+                                likeCount++;
+                                if(postsList.size() == likeCount){
+                                    printAllPostAndCommentCount();
+                                }else{
+                                    loadPostLikeStatus();
+                                }
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Like likePost = new Like("NA" ,"NA", "NA", "NA");
+                            likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
+                            likeCount++;
+                            if(postsList.size() == likeCount){
+                                printAllPostAndCommentCount();
+                            }else{
+                                loadPostLikeStatus();
+                            }
+                        }
+                    });
+        }
+    }
+
     public void printAllPostAndCommentCount(){
         for(int i = 0 ; i < homeList.size(); i++){
+            String ls = "";
+            Like likeStatus = likeStatusList.get(postsList.get(i).getPostId());
+            if(likeStatus.getImageId().equals("NA")){
+                ls = "Not Liked";
+            }else{
+                ls = "Liked";
+            }
+
             Log.e("Post "," User Id : "+postsList.get(i).getUserId()+" | post Id : "+ postsList.get(i).getPostId()+
-                    " | com count "+ commentCountList.get(postsList.get(i).getPostId()));
+                    " | com count "+ commentCountList.get(postsList.get(i).getPostId())+" | Like Status : "+ ls +
+                    " | user Name "+ userList.get(postsList.get(i).getPostId()).getName());
+
+            String postlikecode = postImageList.get(postsList.get(i).getPostId());
+            String[] split = postlikecode.split(Pattern.quote(Constant.STRING_POST_IMAGE_DIFFERENTIATOR));
+            for(int j = 0 ; j < split.length; j++) {
+                String[] likeSplit = split[j].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
+                Log.e("Post Image "," "+ likeSplit[0]+" likes = "+likeSplit[1]);
+            }
         }
+        postsListAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -311,7 +427,11 @@ public class homeActivity extends AppCompatActivity {
         imageViewFriends = (ImageView) findViewById(R.id.imageView_Friends);
 
         postsListView = (ListView) findViewById(R.id.listView_posts_list);
-        postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.home_post_list_item, fullSinglePostsList);
+        postsListAdapter = new PostsListAdapter(getApplicationContext(), R.layout.item_post_one, postsList,
+                userList,
+                commentCountList,
+                likeStatusList,
+                postImageList);
         postsListView.setAdapter(postsListAdapter);
 //
 //        postsListView = (RecyclerView) findViewById(R.id.recycler_view_posts_list);

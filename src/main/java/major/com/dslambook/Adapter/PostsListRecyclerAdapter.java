@@ -24,13 +24,9 @@ import java.util.Date;
 import java.util.List;
 
 import major.com.dslambook.Pojo.FullSinglePost;
-import major.com.dslambook.Pojo.Like;
-import major.com.dslambook.Pojo.User;
 import major.com.dslambook.R;
 import major.com.dslambook.Utility.Constant;
 import major.com.dslambook.Utility.Utility;
-
-import static java.security.AccessController.getContext;
 
 /**
  * Created by prati on 11-Apr-17.
@@ -54,22 +50,22 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 
     private StorageReference mStorageRef;
     private Context mContext;
-    TextView postUsername, postContent, postLiked, postNotLiked, postTotalLike, postDate;
-    ImageView postImage, postUserProfilePic;
+    TextView postUsername, postContent,  postTotalLike, postDate;
+    ImageView postImage, postUserProfilePic, postLiked, postNotLiked;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         public MyViewHolder(View listItemView) {
             super(listItemView);
 
-            postUsername = (TextView) listItemView.findViewById(R.id.textView_post_item_username);
-            postDate = (TextView) listItemView.findViewById(R.id.textView_post_item_post_date);
-            postContent = (TextView) listItemView.findViewById(R.id.textView_post_item_post_content);
-            postLiked = (TextView) listItemView.findViewById(R.id.textView_post_item_post_liked);
-            postNotLiked = (TextView) listItemView.findViewById(R.id.textView_post_item_post_notliked);
-            postTotalLike = (TextView) listItemView.findViewById(R.id.textView_post_item_post_total_likes);
-            postImage= (ImageView) listItemView.findViewById(R.id.imageView_post_item_post_image);
-            postUserProfilePic = (ImageView) listItemView.findViewById(R.id.imageView_post_item_user_profile_pic);
+            postUsername = (TextView) listItemView.findViewById(R.id.post_item_user_username);
+            TextView postDate = (TextView) listItemView.findViewById(R.id.post_item_post_date_and_time);
+            postContent = (TextView) listItemView.findViewById(R.id.post_item_post_content);
+            postLiked = (ImageView) listItemView.findViewById(R.id.post_item_post_liked);
+            postNotLiked = (ImageView) listItemView.findViewById(R.id.post_item_post_not_liked);
+            postTotalLike = (TextView) listItemView.findViewById(R.id.post_item_post_total_likes);
+            final ImageView postImage= (ImageView) listItemView.findViewById(R.id.post_item_post_image_one_one);
+            postUserProfilePic = (ImageView) listItemView.findViewById(R.id.post_item_user_profile_pic);
         }
     }
 
@@ -84,7 +80,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
     @Override
     public PostsListRecyclerAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.home_post_list_item, parent, false);
+                .inflate(R.layout.item_post_one, parent, false);
 
         return new MyViewHolder(itemView);
     }
@@ -153,16 +149,16 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         Date d = new Date();
         String time = new SimpleDateFormat("HH:mm:ss").format(d);
         String date = new SimpleDateFormat("dd-MM-yyyy").format(d);
-        Like like = new Like(postId, time, date);
-
-        likeRef.child(userIdByEmail).child(postId).setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(mContext, "onLike pressed",Toast.LENGTH_SHORT).show();
-                postNotLiked.setVisibility(View.GONE);
-                postLiked.setVisibility(View.VISIBLE);
-            }
-        });
+//        Like like = new Like(postId, time, date);
+//
+//        likeRef.child(userIdByEmail).child(postId).setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//                Toast.makeText(mContext, "onLike pressed",Toast.LENGTH_SHORT).show();
+//                postNotLiked.setVisibility(View.GONE);
+//                postLiked.setVisibility(View.VISIBLE);
+//            }
+//        });
     }
 
     public void onUnLikePost(String postId){

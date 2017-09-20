@@ -117,7 +117,7 @@ public class otherProfileActivity extends AppCompatActivity {
 //        Bitmap circularBitmap = ImageConverter.getRoundedCornerBitmap(bitmap, 180);
 //        imageView_otherUser_profilePic.setImageBitmap(circularBitmap);
 
-        textView_otherUser_username.setText(otherUser.getUserName());
+        textView_otherUser_username.setText(otherUser.getUserId());
         textView_otherUser_dob.setText(otherUser.getDob());
 
         button_addFriend.setOnClickListener(new View.OnClickListener() {

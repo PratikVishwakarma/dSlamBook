@@ -164,7 +164,7 @@ public class userFriendsActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot.exists()){
                         User value = dataSnapshot.getValue(User.class);
-                        Log.e("Search User ","User name "+value.getUserName());
+                        Log.e("Search User ","User name "+value.getUserId());
                         usersList.add(value);
                         if(friendsCount==usersList.size()){
                             Log.e("Users List ","User name "+usersList.size());

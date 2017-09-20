@@ -66,7 +66,7 @@ public class UsersListAdapter extends ArrayAdapter<User> {
         userUsername = (TextView) listItemView.findViewById(R.id.textView_user_item_username);
         postUserProfilePic = (ImageView) listItemView.findViewById(R.id.imageView_user_item_user_profile_pic);
 
-        userUsername.setText(user.getUserName());
+        userUsername.setText(user.getUserId());
         Picasso.with(getContext())
                 .load(user.getImage())
                 .into(postUserProfilePic, new Callback() {

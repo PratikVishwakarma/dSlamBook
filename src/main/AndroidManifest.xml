@@ -17,7 +17,8 @@
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             />
         <activity android:name=".UI.homeActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,7 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".UI.addPostActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity android:name=".UI.searchUserActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
         <activity android:name=".UI.otherProfileActivity" />

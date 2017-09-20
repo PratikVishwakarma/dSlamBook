@@ -15,6 +15,7 @@ public class Constant {
     public static final String FIREBASE_REFERENCE_HOME = "home";
     public static final String FIREBASE_LOCATION_HOME = "home";
     public static final String FIREBASE_LOCATION_FRIEND = "friend";
+    public static final String FIREBASE_REFERENCE_LIKE = "like";
     public static final String FIREBASE_LOCATION_LIKE = "like";
     public static final String FIREBASE_LOCATION_CHAT = "chat";
     public static final String FIREBASE_REFERENCE_COMMENT = "comment";
@@ -28,6 +29,8 @@ public class Constant {
     public static final int IS_NOT_PROVIDE_BASCI_INFORMATION = 0;
 
     public static final String STRING_POSTID_DIFFERENTIATOR = "*d^f+";
+    public static final String STRING_POST_IMAGE_DIFFERENTIATOR = "*d^f+";
+    public static final String STRING_POST_IMAGE_LIKE_DIFFERENTIATOR = "*Ld^f+";
 
 
     public static final String INTENT_KEY_STRING_HOME_CALLING = "homeIntent";
@@ -69,6 +72,10 @@ public class Constant {
     public static final int FRIEND_REQUEST_TYPE_FRIENDS = 3;
     public static final int FRIEND_REQUEST_TYPE_DELETE_REQUEST = 4;
     public static final int FRIEND_REQUEST_TYPE_NOT_NOW_REQUEST = 5;
+
+
+    public static final int LIKE_STATUS_LIKED = 1;
+    public static final int LIKE_STATUS_NOT_LIKED = 0;
 
     public static final String CHAT_MESSAGE_TYPE_SENT = "messageSent";
     public static final String CHAT_MESSAGE_TYPE_RECIEVE = "messageRecieve";

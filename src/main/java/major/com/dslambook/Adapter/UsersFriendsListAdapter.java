@@ -55,13 +55,13 @@ public class UsersFriendsListAdapter extends ArrayAdapter<User> {
         listItemView = LayoutInflater.from(getContext()).inflate(R.layout.users_friends_list_item, parent, false);
         String id = utility.emailToId(user.getEmail());
 
-//        Log.e("Post list ","called without any issue  "+user.getContent()+" img : "+post.getImage()+" id : "+idFromPostId[0]+" username : "+post.getUserName());
+//        Log.e("Post list ","called without any issue  "+user.getContent()+" img : "+post.getImage()+" id : "+idFromPostId[0]+" username : "+post.getUserId());
 //        filePathRef = mStorageRef.child(Constant.FIREBASE_LOCATION_STORAGE_POSTIMAGE).child(idFromPostId[0]).child(post.getImage());
 
         userUsername = (TextView) listItemView.findViewById(R.id.users_friends_item_textView_username);
         postUserProfilePic = (ImageView) listItemView.findViewById(R.id.users_friends_item_imageView_user_profile_pic);
 
-        userUsername.setText(user.getUserName());
+        userUsername.setText(user.getUserId());
         Picasso.with(getContext())
                 .load(user.getImage())
                 .into(postUserProfilePic, new Callback() {

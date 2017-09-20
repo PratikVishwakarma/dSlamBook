@@ -101,7 +101,7 @@ public class singleChatActivity extends AppCompatActivity {
         single_chat_otherUser_username = (TextView) findViewById(R.id.single_chat_otherUser_username);
         single_chat_otherUser_sent_message = (EditText) findViewById(R.id.single_chat_editText_message);
 
-        single_chat_otherUser_username.setText(otherUser.getUserName());
+        single_chat_otherUser_username.setText(otherUser.getUserId());
         single_chat_otherUser_sent_message_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -256,7 +256,7 @@ public class singleChatActivity extends AppCompatActivity {
         NotificationCompat.Builder mBuilder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.app_icon_main)
-                        .setContentTitle("Message from " + otherUser.getUserName())
+                        .setContentTitle("Message from " + otherUser.getUserId())
                         .setContentText(message + " at " + time);
         Intent resultIntent = new Intent(this, singleChatActivity.class);
         resultIntent.putExtra(Constant.INTENT_KEY_TO_SINGLE_CHAT_ACTIVITY, otherUser);
