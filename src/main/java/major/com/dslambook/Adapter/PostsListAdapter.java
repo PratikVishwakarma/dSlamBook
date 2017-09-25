@@ -68,7 +68,7 @@ public class PostsListAdapter extends ArrayAdapter<Post> {
 
     private StorageReference mStorageRef;
 
-    TextView postUsername, postContent, postTotalLike, totalComment;
+    TextView postUsername, postContent, postTotalLike, totalComment, postDate;
 
     ImageView postUserProfilePic, postLiked, postNotLiked, comment;
     private ImageView postImageOneOne;
@@ -121,13 +121,14 @@ public class PostsListAdapter extends ArrayAdapter<Post> {
 //        filePathRef = mStorageRef.child(Constant.FIREBASE_LOCATION_STORAGE_POSTIMAGE)
 //                .child(idFromPostId[0]).child(post.getImage());
 
-        Log.e("Post list"," name = "+currentUser.getImage());
+//        Log.e("Post list"," name = "+currentUser.getImage());
         postUsername = (TextView) listItemView.findViewById(R.id.post_item_user_username);
-        TextView postDate = (TextView) listItemView.findViewById(R.id.post_item_post_date_and_time);
+        postDate = (TextView) listItemView.findViewById(R.id.post_item_post_date_and_time);
         postContent = (TextView) listItemView.findViewById(R.id.post_item_post_content);
         postLiked = (ImageView) listItemView.findViewById(R.id.post_item_post_liked);
         postNotLiked = (ImageView) listItemView.findViewById(R.id.post_item_post_not_liked);
         postTotalLike = (TextView) listItemView.findViewById(R.id.post_item_post_total_likes);
+        totalComment = (TextView) listItemView.findViewById(R.id.post_item_post_total_comments);
         postUserProfilePic = (ImageView) listItemView.findViewById(R.id.post_item_user_profile_pic);
 
         postContent.setText(currentPost.getContent());
@@ -140,8 +141,33 @@ public class PostsListAdapter extends ArrayAdapter<Post> {
             postNotLiked.setVisibility(View.VISIBLE);
             postLiked.setVisibility(View.GONE);
         }
-        postTotalLike.setText(currentPost.getLike()+ "");
+        if(currentPost.getLike() != 0){
+            postTotalLike.setText(currentPost.getLike()+ "");
+        } else{
+            postTotalLike.setText("");
+        }
+        if(currentComment != 0){
+            totalComment.setText(currentComment+ "");
+        } else{
+            totalComment.setText("");
+        }
 
+        postLiked.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("Post Ad"," liked = "+currentPost.getPostId());
+                postLiked.setVisibility(View.GONE);
+                postNotLiked.setVisibility(View.VISIBLE);
+            }
+        });
+        postNotLiked.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("Post Ad"," Not liked = "+currentPost.getPostId());
+                postNotLiked.setVisibility(View.GONE);
+                postLiked.setVisibility(View.VISIBLE);
+            }
+        });
         mStorageRef.child(Constant.FIREBASE_IMAGE_REFERENCE_USER)
                 .child(currentPost.getUserId())
                 .child(currentUser.getImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {

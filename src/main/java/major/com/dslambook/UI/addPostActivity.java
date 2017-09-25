@@ -196,8 +196,8 @@ public class addPostActivity extends AppCompatActivity implements View.OnClickLi
                 CropIntent.putExtra("aspectX", 9);
                 CropIntent.putExtra("aspectY", 16);
             } else{
-                CropIntent.putExtra("outputX", 600);
-                CropIntent.putExtra("outputY", 600);
+                CropIntent.putExtra("outputX", 800);
+                CropIntent.putExtra("outputY", 800);
                 CropIntent.putExtra("aspectX", 1);
                 CropIntent.putExtra("aspectY", 1);
             }
@@ -451,7 +451,7 @@ public class addPostActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public String getFilename() {
-        File file = new File(Environment.getExternalStorageDirectory().getPath(), "MyFolder/Images");
+        File file = new File(Environment.getExternalStorageDirectory().getPath(), "MyFolder/dSlambook");
         if (!file.exists()) {
             file.mkdirs();
         }

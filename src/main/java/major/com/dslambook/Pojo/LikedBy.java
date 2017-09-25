@@ -9,17 +9,16 @@ import major.com.dslambook.Utility.Constant;
 /**
  * Created by prati on 22-Sep-16.
  */
-public class Like {
+public class LikedBy {
 
     public String postId, time, date, imageId;
 
-    public Like() {
+    public LikedBy() {
     }
 
-    public Like(String postId, String imageId) {
+    public LikedBy(String postId, String imageId) {
         this.postId = postId;
         this.imageId = imageId;
-
         DateFormat timef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_TIME);
         this.time = timef.format(Calendar.getInstance().getTime());
         DateFormat datef = new SimpleDateFormat(Constant.FORMATE_ADD_POST_DATE);

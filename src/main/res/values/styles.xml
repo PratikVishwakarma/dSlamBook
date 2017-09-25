@@ -42,6 +42,12 @@
         <item name="android:background">@color/transparent</item>
     </style>
 
+    <!--List SwipeRefreshLayout-->
+    <style name="fragment_list_swipeRefreshLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">0dp</item>
+    </style>
     <!--Add post page style-->
 
     <style name="AddPostImageView">
@@ -50,5 +56,15 @@
         <item name="android:adjustViewBounds">true</item>
         <item name="android:src">@drawable/placeholder_picture</item>
         <item name="android:onClick">onClick</item>
+    </style>
+    <style name="AddPostLikeCount">
+        <item name="android:layout_width">@dimen/post_like_circle</item>
+        <item name="android:layout_height">@dimen/post_like_circle</item>
+        <item name="android:background">@drawable/like_circle</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_margin">10dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16dp</item>
+        <item name="android:text">0</item>
     </style>
 </resources>

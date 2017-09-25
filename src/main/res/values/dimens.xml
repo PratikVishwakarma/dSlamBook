@@ -9,6 +9,7 @@
     <dimen name="feed_item_profile_pic">50dp</dimen>
     <dimen name="round_profile_pic">180dp</dimen>
     <dimen name="round_layout_radius">10dp</dimen>
+    <dimen name="post_like_circle">40dp</dimen>
     <dimen name="feed_item_profile_info_padd">10dp</dimen>
     <dimen name="feed_item_profile_name">15dp</dimen>
     <dimen name="feed_item_timestamp">13dp</dimen>

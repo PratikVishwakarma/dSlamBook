@@ -98,7 +98,7 @@
             android:id="@+id/post_item_post_not_liked"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/icon_not_like"
+            android:src="@drawable/icon_not_liked"
             android:scaleType="centerCrop"
             android:visibility="gone"
             android:adjustViewBounds="true"/>
