@@ -67,6 +67,7 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
     private Map<String, String> postImageList = new HashMap<>();
     private Map<String, Integer> commentCountList = new HashMap<>();
     private Map<String, Like> likeStatusList = new HashMap<>();
+    private Map<String, Like> singlePostLikeList = new HashMap<>();
 
     int postDetailCount = 0, commentCount = 0, likeCount = 0, userCount = 0, postImageCount = 0;
 
@@ -265,7 +266,7 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
             postImageRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            Log.e("homeAct ", "called like image");
+//                            Log.e("homeAct ", "called like image");
                             if (dataSnapshot.exists()) {
                                 String allImageWithLike = "";
                                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
