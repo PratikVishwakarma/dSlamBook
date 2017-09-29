@@ -1,10 +1,10 @@
 package major.com.dslambook.Adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.support.annotation.IntegerRes;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,10 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,24 +23,20 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import major.com.dslambook.Pojo.FullSinglePost;
 import major.com.dslambook.Pojo.Like;
 import major.com.dslambook.Pojo.LikedBy;
 import major.com.dslambook.Pojo.Post;
+import major.com.dslambook.Pojo.PostImage;
 import major.com.dslambook.Pojo.User;
 import major.com.dslambook.R;
 import major.com.dslambook.Utility.Constant;
 import major.com.dslambook.Utility.Utility;
-
-import static java.security.AccessController.getContext;
 
 /**
  * Created by prati on 11-Apr-17.
@@ -75,6 +69,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         View listItemView;
         TextView postUsername, postContent, postTotalLike, totalComment, postDate;
         TextView postImageOneOneLike, postImageTwoTwoLike, postImageTwoOneLike;
+        TextView imageLikeTextView;
         TextView postImageFourOneLike, postImageFourTwoLike, postImageFourThreeLike, postImageFourFourLike;
         ImageView postImageFourOne, postImageFourTwo, postImageFourThree, postImageFourFour;
         ImageView postImageTwoOne, postImageTwoTwo;
@@ -177,8 +172,9 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 //
         currentPost = postList.get(position);
         itemPosition = position;
-        Log.e("Post Ad"," pos of post = "+itemPosition);
+//        Log.e("Post Ad"," pos of post = "+itemPosition);
 //        Log.e("Post Ad"," postList size = "+postList.get(itemPosition).getPostId());
+        Log.e("Post Ad"," holder "+holder);
         currentUser = userList.get(currentPost.getPostId());
         currentComment = commentCountList.get(currentPost.getPostId());
         currentLike = tempLikeList.get(currentPost.getPostId());
@@ -192,10 +188,6 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
-//        Log.e("Post Ad"," holder  = "+holder);
-//        Log.e("Post Ad"," id  = "+ holder.postUsername.getId());
-//        Log.e("Post Ad"," userId = "+currentUser.getUserId());
-//        Log.e("Post Ad"," pos of post = "+itemPosition);
         holder.postContent.setText(currentPost.getContent());
         holder.postUsername.setText(currentUser.getUserId());
         holder.postDate.setText(currentPost.getDate());
@@ -216,23 +208,6 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         } else{
             holder.totalComment.setText("");
         }
-
-        holder.postLiked.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("Post Ad"," liked = "+currentPost.getPostId());
-                holder.postLiked.setVisibility(View.GONE);
-                holder.postNotLiked.setVisibility(View.VISIBLE);
-            }
-        });
-        holder.postNotLiked.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("Post Ad"," Not liked = "+currentPost.getPostId());
-                holder.postNotLiked.setVisibility(View.GONE);
-                holder.postLiked.setVisibility(View.VISIBLE);
-            }
-        });
         mStorageRef.child(Constant.FIREBASE_IMAGE_REFERENCE_USER)
                 .child(currentPost.getUserId())
                 .child(currentUser.getImage()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -251,6 +226,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                              final PostsListRecyclerAdapter.MyViewHolder holder, final int itemPosition,
                              final Like likeStatus){
         final String imageId_1_1, imageId_2_1, imageId_2_2, imageId_4_1, imageId_4_2, imageId_4_3, imageId_4_4;
+        final String image_1_1_Url, image_2_1_Url, image_2_2_Url, image_4_1_Url, image_4_2_Url, image_4_3_Url, image_4_4_Url;
         final String[] likeSplit1_1, likeSplit2_1, likeSplit2_2, likeSplit4_1, likeSplit4_2, likeSplit4_3, likeSplit4_4, split;
         final int imageId_1_1_like, imageId_2_1_like, imageId_2_2_like, imageId_4_1_like, imageId_4_2_like, imageId_4_3_like, imageId_4_4_like;
 
@@ -262,41 +238,45 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         switch (currentPost.getTotalImages()){
             case 1:
                 likeSplit1_1 = split[0].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
-//                holder.postImageOneOne = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_one_one);
                 imageId_1_1 = likeSplit1_1[0].replace("_img.jpg","");
                 imageId_1_1_like = Integer.parseInt(likeSplit1_1[1]);
+                image_1_1_Url = likeSplit1_1[2];
+
+//                holder.postImageOneOne = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_one_one);
 //                holder.postImageOneOneLike = (TextView) holder.listItemView.findViewById(R.id.post_item_post_like_one_one);
 
-                postImageRef.child(likeSplit1_1[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageOneOne);
-                    }
-                });
+                Picasso.with(mContext)
+                        .load(image_1_1_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageOneOne);
 
                 if(likeStatus.getImageId().equals(imageId_1_1)){
-                    holder.postImageOneOneLike.setText(imageId_1_1_like+" L");
-                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId_1_1);
-                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1 , imageId_1_1_like, currentPost, itemPosition, holder);
-//                            notifyItemChanged(itemPosition);
-                        }
-                    });
+                    setLikeButton(holder.postImageOneOneLike, holder, currentPost, imageId_1_1_like, imageId_1_1, itemPosition, true);
+//                    holder.postImageOneOneLike.setText(imageId_1_1_like+"");
+//                    holder.postImageOneOneLike.setClickable(true);
+//                    holder.postImageOneOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
+//                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageOneOneLike.setClickable(false);
+//                            Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId_1_1+" pL = "+currentPost.getLike());
+//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1, currentPost, itemPosition, holder);
+//                        }
+//                    });
                 } else{
-                    holder.postImageOneOneLike.setText(imageId_1_1_like+" NL");
-                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_1_1);
-                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1 , imageId_1_1_like, currentPost, itemPosition, holder);
-//                            notifyItemChanged(itemPosition);
-                        }
-                    });
+                    setLikeButton(holder.postImageOneOneLike, holder, currentPost, imageId_1_1_like, imageId_1_1, itemPosition, false);
+//                    holder.postImageOneOneLike.setText(imageId_1_1_like+"");
+//                    holder.postImageOneOneLike.setClickable(true);
+//                    holder.postImageOneOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
+//                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageOneOneLike.setClickable(false);
+//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_1_1+" pL = "+currentPost.getLike());
+//                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1 , currentPost, itemPosition, holder);
+////                            notifyItemChanged(itemPosition);
+//                        }
+//                    });
                 }
 
 
@@ -309,6 +289,8 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                 imageId_2_2 = likeSplit2_2[0].replace("_img.jpg","");
                 imageId_2_1_like = Integer.parseInt(likeSplit2_1[1]);
                 imageId_2_2_like = Integer.parseInt(likeSplit2_2[1]);
+                image_2_1_Url = likeSplit2_1[2];
+                image_2_2_Url = likeSplit2_1[2];
 
                 holder.postImageTwoOne = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_two_one);
                 holder.postImageTwoTwo = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_two_two);
@@ -316,68 +298,70 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                 holder.postImageTwoOneLike = (TextView) holder.listItemView.findViewById(R.id.post_item_post_like_two_one);
                 holder.postImageTwoTwoLike = (TextView) holder.listItemView.findViewById(R.id.post_item_post_like_two_two);
 
-                postImageRef.child(likeSplit2_1[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageTwoOne);
-                    }
-                });
-                postImageRef.child(likeSplit2_2[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageTwoTwo);
-                    }
-                });
+                Picasso.with(mContext)
+                        .load(image_2_1_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageTwoOne);
+
+                Picasso.with(mContext)
+                        .load(image_2_2_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageTwoTwo);
 
                 if(likeStatus.getImageId().equals(imageId_2_1)){
-                    holder.postImageTwoOneLike.setText(imageId_2_1_like+ " L");
-                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_1);
-                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1 , imageId_2_1_like, currentPost, itemPosition, holder);
-                            notifyItemChanged(itemPosition);
-                            holder.postImageTwoOneLike.setClickable(false);
-                        }
-                    });
-                } else{
-                    holder.postImageTwoOneLike.setText(imageId_2_1_like+ " NL");
-                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single  liked = "+currentPost.getPostId()+" iId : "+imageId_2_1);
-                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1 , imageId_2_1_like, currentPost, itemPosition, holder);
-                            notifyItemChanged(itemPosition);
-                        }
-                    });
+                    setLikeButton(holder.postImageTwoOneLike, holder, currentPost, imageId_2_1_like, imageId_2_1, itemPosition, true);
+//                    holder.postImageTwoOneLike.setText(imageId_2_1_like+"");
+//                    holder.postImageTwoOneLike.setClickable(true);
+//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
+//                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageTwoOneLike.setClickable(false);
+//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_1+" pL = "+currentPost.getLike());
+//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1, currentPost, itemPosition, holder);
+//                        }
+//                    });
+                } if(!likeStatus.getImageId().equals(imageId_2_1)){
+                setLikeButton(holder.postImageTwoOneLike, holder, currentPost, imageId_2_1_like, imageId_2_1, itemPosition, false);
+//                    holder.postImageTwoOneLike.setClickable(true);
+//                    holder.postImageTwoOneLike.setText(imageId_2_1_like+"");
+//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
+//                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageTwoOneLike.setClickable(false);
+//                            Log.e("Post Ad","single  liked = "+currentPost.getPostId()+" iId : "+imageId_2_1+" pL = "+currentPost.getLike());
+//                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1 , currentPost, itemPosition, holder);
+//                        }
+//                    });
                 }
 
                 if(likeStatus.getImageId().equals(imageId_2_2)){
-                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+ " L");
-                    holder.postImageTwoTwoLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_2);
-                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_2 , imageId_2_2_like, currentPost, itemPosition, holder);
-                            notifyItemChanged(itemPosition);
-                        }
-                    });
-                } else{
-                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+ " NL");
-                    holder.postImageTwoTwoLike.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId_2_2);
-                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_2 , imageId_2_2_like, currentPost, itemPosition, holder);
-                            notifyItemChanged(itemPosition);
-                        }
-                    });
+                    setLikeButton(holder.postImageTwoTwoLike, holder, currentPost, imageId_2_2_like, imageId_2_2, itemPosition, true);
+//                    holder.postImageTwoTwoLike.setClickable(true);
+//                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+"");
+//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
+//                    holder.postImageTwoTwoLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageTwoTwoLike.setClickable(false);
+//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_2+" pL = "+currentPost.getLike());
+//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_2, currentPost, itemPosition, holder);
+//                        }
+//                    });
+                } if(!likeStatus.getImageId().equals(imageId_2_2)){
+                    setLikeButton(holder.postImageTwoTwoLike, holder, currentPost, imageId_2_2_like, imageId_2_2, itemPosition, true);
+//                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+"");
+//                    holder.postImageTwoTwoLike.setClickable(true);
+//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
+//                    holder.postImageTwoTwoLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            holder.postImageTwoTwoLike.setClickable(false);
+//                            Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId_2_2+" pL = "+currentPost.getLike());
+//                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_2 , currentPost, itemPosition, holder);
+//                        }
+//                    });
                 }
 
                 break;
@@ -386,6 +370,19 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                 likeSplit4_2 = split[1].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
                 likeSplit4_3 = split[2].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
                 likeSplit4_4 = split[3].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
+
+                imageId_4_1 = likeSplit4_1[0].replace("_img.jpg","");
+                imageId_4_2 = likeSplit4_2[0].replace("_img.jpg","");
+                imageId_4_3 = likeSplit4_3[0].replace("_img.jpg","");
+                imageId_4_4 = likeSplit4_4[0].replace("_img.jpg","");
+                imageId_4_1_like = Integer.parseInt(likeSplit4_1[1]);
+                imageId_4_2_like = Integer.parseInt(likeSplit4_2[1]);
+                imageId_4_3_like = Integer.parseInt(likeSplit4_3[1]);
+                imageId_4_4_like = Integer.parseInt(likeSplit4_4[1]);
+                image_4_1_Url = likeSplit4_1[2];
+                image_4_2_Url = likeSplit4_2[2];
+                image_4_3_Url = likeSplit4_3[2];
+                image_4_4_Url = likeSplit4_4[2];
                 holder.postImageFourOne = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_four_one);
                 holder.postImageFourTwo= (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_four_two);
                 holder.postImageFourThree = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_four_three);
@@ -401,47 +398,55 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                 holder.postImageFourThreeLike.setText(likeSplit4_3[1].toString());
                 holder.postImageFourFourLike.setText(likeSplit4_4[1].toString());
 
-                postImageRef.child(likeSplit4_1[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageFourOne);
-                    }
-                });
-                postImageRef.child(likeSplit4_2[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageFourTwo);
-                    }
-                });
-                postImageRef.child(likeSplit4_3[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageFourThree);
-                    }
-                });
-                postImageRef.child(likeSplit4_4[0]).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Picasso.with(mContext)
-                                .load(uri).placeholder(R.drawable.placeholder_picture)
-                                .error(R.drawable.placeholder_picture)
-                                .into(holder.postImageFourFour);
-                    }
-                });
+                Picasso.with(mContext)
+                        .load(image_4_1_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageFourOne);
+                Picasso.with(mContext)
+                        .load(image_4_2_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageFourTwo);
+                Picasso.with(mContext)
+                        .load(image_4_3_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageFourThree);
+                Picasso.with(mContext)
+                        .load(image_4_4_Url).placeholder(R.drawable.placeholder_picture)
+                        .error(R.drawable.placeholder_picture)
+                        .into(holder.postImageFourFour);
                 break;
 
         }
     }
-    public void likePost(final String postUserId, final String postId, final String imageId, final int imageLike, final Post currentPost,
+    public void setLikeButton(TextView textViewId, final PostsListRecyclerAdapter.MyViewHolder holder,final Post currentPost, int perImageLike,
+                              final String imageId, final int itemPosition, boolean likeStatus){
+        holder.imageLikeTextView = textViewId;
+//        holder.imageLikeTextView.setId(textViewId);
+        holder.imageLikeTextView.setText(perImageLike+"");
+        holder.imageLikeTextView.setClickable(true);
+        if(likeStatus){
+            holder.imageLikeTextView.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
+            holder.imageLikeTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.imageLikeTextView.setClickable(false);
+                    Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
+                    notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId, currentPost, itemPosition, holder);
+                }
+            });
+        } else{
+            holder.imageLikeTextView.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
+            holder.imageLikeTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.imageLikeTextView.setClickable(false);
+                    Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
+                    likePost(currentPost.getUserId(),currentPost.getPostId(), imageId, currentPost, itemPosition, holder);
+                }
+            });
+        }
+    }
+    public void likePost(final String postUserId, final String postId, final String imageId, final Post currentPost,
                          final int itemPosition, final PostsListRecyclerAdapter.MyViewHolder holder){
         holder.postLiked.setVisibility(View.VISIBLE);
         holder.postNotLiked.setVisibility(View.GONE);
@@ -450,35 +455,59 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    Like value = dataSnapshot.getValue(Like.class);
+                    final Like value = dataSnapshot.getValue(Like.class);
                     Log.e("Post Ad","in Like all ready liked once = "+value.getImageId()+" = "+imageId);
+                    notLikePost(postUserId, postId, value.getImageId(), currentPost, itemPosition, holder);
+                    likePost(postUserId, postId, imageId, currentPost, itemPosition, holder);
                 } else{
                     postRef.child(postUserId).child(postId).child("likedBy").child(userId).setValue(likedBy).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            postRef.child(postUserId).child(postId).child("like").setValue(currentPost.getLike()+1).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            postRef.child(postUserId).child(postId).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
-                                public void onSuccess(Void aVoid) {
-                                    postRef.child(postUserId).child(postId).child("image").child(imageId).child("like").setValue(imageLike+1).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            final Like like = new Like(postId, imageId);
-                                            final Post uPost = new Post(userId, postId, currentPost.getContent(),
-                                                    currentPost.getTime(), currentPost.getDate(), currentPost.getLike()+1,
-                                                    currentPost.getTotalImages());
-
-                                            likeRef.child(userId).child(postId).setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    tempLikeList.remove(postId);
-                                                    tempLikeList.put(postId, like);
-                                                    postList.set(itemPosition,uPost);
-                                                    notifyItemChanged(itemPosition);
-                                                }
-                                            });
-                                        }
-                                    });
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()){
+                                        final Post lPost = dataSnapshot.getValue(Post.class);
+                                        postRef.child(postUserId).child(postId).child("like").setValue(lPost.getLike()+1).
+                                                addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        postRef.child(postUserId).child(postId).child("image").child(imageId)
+                                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                        if (dataSnapshot.exists()){
+                                                                            PostImage lPostImage = dataSnapshot.getValue(PostImage.class);
+                                                                            postRef.child(postUserId).child(postId).child("image").child(imageId).child("like").
+                                                                                    setValue(lPostImage.getLike()+1).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                @Override
+                                                                                public void onSuccess(Void aVoid) {
+                                                                                    final Like like = new Like(postId, imageId);
+                                                                                    final Post uPost = new Post(userId, postId, currentPost.getContent(),
+                                                                                            currentPost.getTime(), currentPost.getDate(), lPost.getLike()+1,
+                                                                                            currentPost.getTotalImages());
+                                                                                    likeRef.child(userId).child(postId).setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onSuccess(Void aVoid) {
+                                                                                            tempLikeList.remove(postId);
+                                                                                            tempLikeList.put(postId, like);
+                                                                                            postList.set(itemPosition,uPost);
+                                                                                            notifyItemChanged(itemPosition);
+                                                                                        }
+                                                                                    });
+                                                                                }
+                                                                            });
+                                                                        }else{}
+                                                                    }
+                                                                    @Override
+                                                                    public void onCancelled(DatabaseError databaseError) {}
+                                                                });
+                                                    }
+                                                });
+                                    } else{}
                                 }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {}
                             });
                         }
                     });
@@ -488,47 +517,76 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
             public void onCancelled(DatabaseError databaseError) {}
         });
     }
-    public void notLikePost(final String postUserId, final String postId, final String imageId, final int imageLike, final Post currentPost,
+    public void notLikePost(final String postUserId, final String postId, final String imageId, final Post currentPost,
                             final int itemPosition, final PostsListRecyclerAdapter.MyViewHolder holder){
         holder.postLiked.setVisibility(View.GONE);
         holder.postNotLiked.setVisibility(View.VISIBLE);
         postRef.child(postUserId).child(postId).child("likedBy").child(userId).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                int like = currentPost.getLike();
-                if(like == 0){
-                    like = 0;
-                } else{
-                    like = like - 1;
-                }
-                postRef.child(postUserId).child(postId).child("like").setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
+                postRef.child(postUserId).child(postId).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onSuccess(Void aVoid) {
-                        int like = imageLike;
-                        if(like == 0){
-                            like = 0;
-                        } else{
-                            like = like - 1;
-                        }
-                        postRef.child(postUserId).child(postId).child("image").child(imageId).child("like").setValue(like).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                final Like likePost = new Like("NA" , "NA");
-                                final Post uPost = new Post(userId, postId, currentPost.getContent(),
-                                        currentPost.getTime(), currentPost.getDate(), currentPost.getLike()-1,
-                                        currentPost.getTotalImages());
-                                likeRef.child(userId).child(postId).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        tempLikeList.remove(postId);
-                                        tempLikeList.put(postId, likePost);
-                                        postList.set(itemPosition,uPost);
-                                        notifyItemChanged(itemPosition);
-                                    }
-                                });
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()){
+                            final Post lPost = dataSnapshot.getValue(Post.class);
+                            int pLike = lPost.getLike();
+                            if(pLike == 0){
+                                pLike = 0;
+                            } else{
+                                pLike  = pLike - 1;
                             }
-                        });
+                            postRef.child(postUserId).child(postId).child("like").setValue(pLike).
+                                    addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            postRef.child(postUserId).child(postId).child("image").child(imageId)
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            if (dataSnapshot.exists()){
+                                                                PostImage lPostImage = dataSnapshot.getValue(PostImage.class);
+                                                                int iLike = lPostImage.getLike();
+                                                                if(iLike == 0){
+                                                                    iLike = 0;
+                                                                } else{
+                                                                    iLike = iLike - 1;
+                                                                }
+                                                                postRef.child(postUserId).child(postId).child("image").child(imageId).child("like").
+                                                                        setValue(iLike).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        int pLike = lPost.getLike();
+                                                                        if(pLike == 0){
+                                                                            pLike = 0;
+                                                                        } else{
+                                                                            pLike  = pLike - 1;
+                                                                        }
+                                                                        final Like like = new Like("NA", "NA");
+                                                                        final Post uPost = new Post(userId, postId, currentPost.getContent(),
+                                                                                currentPost.getTime(), currentPost.getDate(), pLike,
+                                                                                currentPost.getTotalImages());
+                                                                        likeRef.child(userId).child(postId).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                            @Override
+                                                                            public void onSuccess(Void aVoid) {
+                                                                                tempLikeList.remove(postId);
+                                                                                tempLikeList.put(postId, like);
+                                                                                postList.set(itemPosition,uPost);
+                                                                                notifyItemChanged(itemPosition);
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }else{}
+                                                        }
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {}
+                                                    });
+                                        }
+                                    });
+                        } else{}
                     }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
                 });
             }
         });

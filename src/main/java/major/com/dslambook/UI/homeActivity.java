@@ -200,6 +200,7 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     public void loadAllHomePost(){
+        swipeRefreshLayout.setRefreshing(true);
         postDetailCount = 0;
         postImageCount = 0;
         commentCount = 0;
@@ -270,7 +271,8 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()) {
                                     PostImage postImage = childDataSnapshot.getValue(PostImage.class);
                                     allImageWithLike = allImageWithLike + postImage.getImage() + Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR +
-                                            +postImage.getLike() + Constant.STRING_POST_IMAGE_DIFFERENTIATOR;
+                                            postImage.getLike() + Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR +
+                                            postImage.getImageUrl() + Constant.STRING_POST_IMAGE_DIFFERENTIATOR;
                                 }
                                 postImageRef.removeEventListener(this);
                                 postImageList.put(postsList.get(postImageCount).getPostId(), allImageWithLike);
@@ -371,7 +373,9 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
                                 likeCount++;
                                 if(postsList.size() == likeCount){
-                                    printAllPostAndCommentCount();
+//                                    printAllPostAndCommentCount();
+                                    rpostsListAdapter.notifyDataSetChanged();
+                                    swipeRefreshLayout.setRefreshing(false);
                                 }else{
                                     loadPostLikeStatus();
                                 }
@@ -380,7 +384,9 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
                                 likeCount++;
                                 if(postsList.size() == likeCount){
-                                    printAllPostAndCommentCount();
+//                                    printAllPostAndCommentCount();
+                                    rpostsListAdapter.notifyDataSetChanged();
+                                    swipeRefreshLayout.setRefreshing(false);
                                 }else{
                                     loadPostLikeStatus();
                                 }
@@ -392,7 +398,9 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                             likeStatusList.put(postsList.get(likeCount).getPostId(), likePost);
                             likeCount++;
                             if(postsList.size() == likeCount){
-                                printAllPostAndCommentCount();
+//                                printAllPostAndCommentCount();
+                                rpostsListAdapter.notifyDataSetChanged();
+                                swipeRefreshLayout.setRefreshing(false);
                             }else{
                                 loadPostLikeStatus();
                             }
@@ -419,7 +427,8 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
             String[] split = postlikecode.split(Pattern.quote(Constant.STRING_POST_IMAGE_DIFFERENTIATOR));
             for(int j = 0 ; j < split.length; j++) {
                 String[] likeSplit = split[j].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
-                Log.e("Post Image "," "+ likeSplit[0]+" likes = "+likeSplit[1]);
+                Log.e("Post Image "," "+ likeSplit[0]+" likes = "+likeSplit[1]+" Url = "+likeSplit[2]);
+
             }
         }
         rpostsListAdapter.notifyDataSetChanged();

@@ -5,13 +5,14 @@ package major.com.dslambook.Pojo;
  */
 public class PostImage {
 
-    private String image;
+    private String image, imageUrl;
     private int like;
 
     public PostImage() {}
 
-    public PostImage(String image, int like) {
+    public PostImage(String image, String imageUrl, int like) {
         this.image = image;
+        this.imageUrl = imageUrl;
         this.like = like;
     }
 
@@ -19,6 +20,9 @@ public class PostImage {
         return image;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
     public int getLike() {
         return like;
     }

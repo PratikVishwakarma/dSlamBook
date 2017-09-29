@@ -101,10 +101,10 @@ public class addPostActivity extends AppCompatActivity implements View.OnClickLi
     Bitmap bitmap_1_1 = null, bitmap_2_1 = null, bitmap_2_2 = null, bitmap_4_1 = null, bitmap_4_2 = null, bitmap_4_3 = null, bitmap_4_4 = null;
     Bitmap[] allBitmap = new Bitmap[]{};
     ArrayList<String> allImageName = new ArrayList<String>();
+    ArrayList<String> allImageUrl = new ArrayList<String>();
     private int noOfImage = 0, noOfImageAdded = 0;
     private Utility utility;
     Intent CamIntent, GalIntent, CropIntent ;
-    public boolean uploadAllImagesStatus = Boolean.FALSE;
     DateFormat datef, timef;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,14 +233,17 @@ public class addPostActivity extends AppCompatActivity implements View.OnClickLi
             allBitmap[noOfImage].compress(Bitmap.CompressFormat.JPEG, 100, baos);
             final byte[] data = baos.toByteArray();
             UploadTask uploadTask = photoRef.putBytes(data);
-            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
                     allImageName.add(String.valueOf(lCurrentTime) + "_img.jpg");
+                    allImageUrl.add(String.valueOf(downloadUrl));
                     Log.e("Images Name ", " "+ allImageName.get(noOfImage));
                     noOfImage++;
                     if(totalNoOfImages == noOfImage){
                         Log.e("Images upload ", "Total len : "+ allImageName.size());
+                        Log.e("Images upload ", "Total url : "+ allImageUrl.size());
                         noOfImage = 0;
                         addPostEntry(postId);
                         progress.setProgress(75);
@@ -279,7 +282,7 @@ public class addPostActivity extends AppCompatActivity implements View.OnClickLi
                     child(postId).
                     child("image").
                     child(imageId);
-            PostImage newPostImage = new PostImage(allImageName.get(noOfImageAdded), 0);
+            PostImage newPostImage = new PostImage(allImageName.get(noOfImageAdded),allImageUrl.get(noOfImageAdded), 0);
             newImageEntry.setValue(newPostImage).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
