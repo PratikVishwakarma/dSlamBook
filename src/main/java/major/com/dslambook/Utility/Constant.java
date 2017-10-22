@@ -86,6 +86,18 @@ public class Constant {
     public static final String CHAT_MESSAGE_SEEN_TIME = "seenTime";
 
 
+    public static final String JSON_OBJECT_CONSTANT_HOME = "home";
+    public static final String JSON_OBJECT_CONSTANT_POST = "post";
+    public static final String JSON_OBJECT_CONSTANT_USER = "user";
+    public static final String JSON_OBJECT_CONSTANT_LIKE_STATUS = "likeStatus";
+
+
+    public static final String URL = "https://us-central1-dslambook.cloudfunctions.net/";
+    public static final String CLOUD_FUNCITON_HOMEPOST_URL = URL+ "homePost";
+    public static final String PARAM_REQUEST = "request";
+    public static final String PARAM_REQUEST_VALUE = "homePost";
+    public static final String PARAM_USERID = "userId";
+
 
 
 }

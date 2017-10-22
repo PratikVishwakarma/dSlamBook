@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,10 +25,22 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import major.com.dslambook.Adapter.PostsListRecyclerAdapter;
@@ -62,12 +76,15 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
     private PostsListRecyclerAdapter rpostsListAdapter;
     private ArrayList<Post> postsList = new ArrayList<>();
     private ArrayList<Home> homeList = new ArrayList<>();
-    private Map<String, Integer> postPositionList = new HashMap<>();
     private Map<String, User> userList = new HashMap<>();
     private Map<String, String> postImageList = new HashMap<>();
     private Map<String, Integer> commentCountList = new HashMap<>();
     private Map<String, Like> likeStatusList = new HashMap<>();
-    private Map<String, Like> singlePostLikeList = new HashMap<>();
+
+    private TreeMap<String, User> rUserList = new TreeMap<>();
+    private TreeMap<String, String> rPostImageList = new TreeMap<>();
+    private TreeMap<String, Integer> rCommentCountList = new TreeMap<>();
+    private TreeMap<String, Like> rLikeStatusList = new TreeMap<>();
 
     int postDetailCount = 0, commentCount = 0, likeCount = 0, userCount = 0, postImageCount = 0;
 
@@ -93,9 +110,10 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                 goToSignupActivity();
             }
             if(isNetworkAvailable()) {
-                Log.e("Post Act"," "+ userId);
+                //Log.e("Post Act"," "+ userId);
                 initializeScreen();
-                loadAllHomePost();
+                callLoadDataTask();
+//                loadAllHomePost();
             }else{
 
             }
@@ -200,6 +218,19 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
 //        });
     }
 
+    public void callLoadDataTask(){
+        URL url = null;
+        try{
+            swipeRefreshLayout.setRefreshing(true);
+            url = new URL(builtUri(userId).toString());
+            new LoadDataFromHTTPTask().execute(url);
+        }catch (MalformedURLException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loadAllHomePost(){
         swipeRefreshLayout.setRefreshing(true);
         postDetailCount = 0;
@@ -224,7 +255,14 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                         homeList.add(home);
                     }
                     Collections.reverse(homeList);
-                    loadPostDetailsFromHome();
+                    //loadPostDetailsFromHome();
+//                    if(!in_recursion) {
+//                        in_recursion = true;
+//                        loadPostImageDetailsFromPost();
+//                        if(!in_recursion) {
+//
+//                        }
+//                    }
                 } else{}
                 homeRef.removeEventListener(this);
             }
@@ -233,32 +271,37 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
     }
 
-    public void loadPostDetailsFromHome(){
-        if(postDetailCount < homeList.size()){
-            postsRef.child(homeList.get(postDetailCount).getOtherUserId()).
-                    child(homeList.get(postDetailCount).getPostId()).
-                    addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                Post singlePost = dataSnapshot.getValue(Post.class);
-                                postsList.add(singlePost);
-                                postPositionList.put(singlePost.getPostId(),postDetailCount);
-                                postDetailCount++;
-                                if(homeList.size() == postDetailCount){
-                                    loadPostImageDetailsFromPost();
-                                }else{
-                                    loadPostDetailsFromHome();
-                                }
-                            } else{}
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-        }
-    }
+//    boolean in_recursion = true;
+    
+//    public void loadPostDetailsFromHome(){
+//        if(postDetailCount < homeList.size()){
+//            postsRef.child(homeList.get(postDetailCount).getOtherUserId()).
+//                    child(homeList.get(postDetailCount).getPostId()).
+//                    addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                            if(dataSnapshot.exists()){
+//                                Post singlePost = dataSnapshot.getValue(Post.class);
+//                                postsList.add(singlePost);
+//                                postPositionList.put(singlePost.getPostId(),postDetailCount);
+//                                postDetailCount++;
+//                                if(homeList.size() == postDetailCount){
+////                                    in_recursion= false;
+//                                     loadPostImageDetailsFromPost();
+//                                }else{
+//                                    // in_recursion = true
+//                                    loadPostDetailsFromHome();
+//                                }
+//                            } else{}
+//                        }
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {}
+//                    });
+////        postDetailCount++;
+//        }
+//    }
 
-    public void loadPostImageDetailsFromPost(){
+    public void loadPostImageDetailsFromPost(final JSONObject mainJsonObject){
         if(postImageCount < homeList.size()){
             postImageRef = postsRef.child(homeList.get(postImageCount).getOtherUserId()).
                     child(homeList.get(postImageCount).getPostId()).
@@ -279,9 +322,14 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 postImageList.put(postsList.get(postImageCount).getPostId(), allImageWithLike);
                                 postImageCount++;
                                 if (homeList.size() == postImageCount) {
-                                    loadUserDetailsFromHome();
+//                                    loadUserDetailsFromHome();
+                                    try {
+                                        parseUserFromJson(mainJsonObject);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 } else {
-                                    loadPostImageDetailsFromPost();
+                                    loadPostImageDetailsFromPost(mainJsonObject);
                                 }
                             } else {
                                 postImageRef.removeEventListener(this);
@@ -297,30 +345,30 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
     }
 
-    public void loadUserDetailsFromHome(){
-        if(userCount < homeList.size()){
-            userRef.child(homeList.get(userCount).getOtherUserId()).
-                    addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                User user = dataSnapshot.getValue(User.class);
-                                userList.put(homeList.get(userCount).getPostId(),user);
-                                userCount++;
-                                if(homeList.size() == userCount){
-                                    loadAllCommentCount();
-                                }else{
-                                    loadUserDetailsFromHome();
-                                }
-                            } else{}
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {}
-                    });
-        }
-    }
+//    public void loadUserDetailsFromHome(){
+//        if(userCount < homeList.size()){
+//            userRef.child(homeList.get(userCount).getOtherUserId()).
+//                    addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                            if(dataSnapshot.exists()){
+//                                User user = dataSnapshot.getValue(User.class);
+//                                userList.put(homeList.get(userCount).getPostId(),user);
+//                                userCount++;
+//                                if(homeList.size() == userCount){
+//                                    loadAllCommentCount();
+//                                }else{
+//                                    loadUserDetailsFromHome();
+//                                }
+//                            } else{}
+//                        }
+//                        @Override
+//                        public void onCancelled(DatabaseError databaseError) {}
+//                    });
+//        }
+//    }
 
-    public void loadAllCommentCount(){
+    public void loadAllCommentCount(final JSONObject mainJsonObject) {
         if(commentCount < postsList.size()){
             commentCountRef = postsRef.child(postsList.get(commentCount).getUserId()).
                     child(postsList.get(commentCount).getPostId()).
@@ -333,17 +381,27 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 commentCountList.put(postsList.get(commentCount).getPostId(), totalLastComment);
                                 commentCount++;
                                 if(postsList.size() == commentCount){
-                                    loadPostLikeStatus();
+//                                    loadPostLikeStatus();
+                                    try {
+                                        parseLikeStatusFromJson(mainJsonObject);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }else{
-                                    loadAllCommentCount();
+                                    loadAllCommentCount(mainJsonObject);
                                 }
                             } else{
                                 commentCountList.put(postsList.get(commentCount).getPostId(), 0);
                                 commentCount++;
                                 if(postsList.size() == commentCount){
-                                    loadPostLikeStatus();
+//                                    loadPostLikeStatus();
+                                    try {
+                                        parseLikeStatusFromJson(mainJsonObject);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }else{
-                                    loadAllCommentCount();
+                                    loadAllCommentCount(mainJsonObject);
                                 }
                             }
                             mFirebaseDatabase.getReference().removeEventListener(this);
@@ -354,9 +412,13 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                             commentCountList.put(postsList.get(commentCount).getPostId(), 0);
                             commentCount++;
                             if(postsList.size() == commentCount){
-                                loadPostLikeStatus();
+                                try {
+                                    parseLikeStatusFromJson(mainJsonObject);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                             }else{
-                                loadAllCommentCount();
+                                loadAllCommentCount(mainJsonObject);
                             }
                         }
                     });
@@ -470,8 +532,7 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
                 commentCountList,
                 likeStatusList,
                 postImageList,
-                userId,
-                postPositionList);
+                userId);
         postsListView.setLayoutManager(mLayoutManager);
         postsListView.setItemAnimator(new DefaultItemAnimator());
         postsListView.setAdapter(rpostsListAdapter);
@@ -545,6 +606,165 @@ public class homeActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh() {
-        loadAllHomePost();
+//        loadAllHomePost();
+        callLoadDataTask();
+    }
+
+    public Uri builtUri(String fUserId){
+        if(fUserId != null || fUserId.trim().length() != 0){
+            return  Uri.parse(Constant.CLOUD_FUNCITON_HOMEPOST_URL).buildUpon()
+                    .appendQueryParameter(Constant.PARAM_REQUEST, Constant.PARAM_REQUEST_VALUE)
+                    .appendQueryParameter(Constant.PARAM_USERID, fUserId)
+                    .build();
+        }else{
+            return null;
+        }
+    }
+    public static String getResponseFromHttpUrl(URL url) throws IOException {
+        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+        try {
+            InputStream in = httpURLConnection.getInputStream();
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            boolean hasInput = scanner.hasNext();
+            if (hasInput) {
+                return scanner.next();
+            } else {
+                return null;
+            }
+        }finally {
+            httpURLConnection.disconnect();
+        }
+    }
+
+    public class LoadDataFromHTTPTask extends AsyncTask<URL, Void, String>{
+        @Override
+        protected String doInBackground(URL... params) {
+            URL Url = params[0];
+            Log.e("http ", "AsyTsk srt : "+Url.toString());
+            String postUrlResult = null;
+            try{
+                postUrlResult = getResponseFromHttpUrl(Url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return postUrlResult;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Log.e("http ", "AsyncTask postEx : ");
+            if(s != null && !s.equals("")){
+                //Log.e("http ", s);
+                try {
+                    parseJsonFromString(s);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                Log.e("http ", "blank ");
+            }
+            super.onPostExecute(s);
+        }
+    }
+
+
+    public void parseJsonFromString(String inputStream) throws JSONException {
+        swipeRefreshLayout.setRefreshing(true);
+        setAllToInitialState();
+        Log.e("JSON ", "Parsing start ");
+        JSONObject mainJsonObject = new JSONObject(inputStream);
+        parseHomePostFromJson(mainJsonObject);
+    }
+    public void parseHomePostFromJson(JSONObject mainJsonObject) throws JSONException {
+        JSONArray homeJsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_HOME);
+        for (int i = 0; i < homeJsonArray.length(); i++) {
+            JSONObject explrObject = homeJsonArray.getJSONObject(i);
+            Home home = new Home(explrObject.get("postId").toString(), explrObject.get("otherUserId").toString());
+            Log.e("json  ", "userId : "+ explrObject.get("otherUserId"));
+            Log.e("json  ", "postId : "+ explrObject.get("postId"));
+            homeList.add(home);
+        }
+        parsePostDetailFromJson(mainJsonObject);
+    }
+    public void parsePostDetailFromJson(JSONObject mainJsonObject) throws JSONException {
+        JSONArray homeJsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_POST);
+        for (int i = 0; i < homeJsonArray.length(); i++) {
+            JSONObject explrObject = homeJsonArray.getJSONObject(i);
+            Post post = new Post(explrObject.get(Post.COLUMN_USERID).toString(),
+                    explrObject.get(Post.COLUMN_POSTID).toString(),
+                    explrObject.get(Post.COLUMN_CONTENT).toString(),
+                    explrObject.get(Post.COLUMN_TIME).toString(),
+                    explrObject.get(Post.COLUMN_DATE).toString(),
+                    Integer.parseInt(explrObject.get(Post.COLUMN_LIKE).toString()),
+                    Integer.parseInt(explrObject.get(Post.COLUMN_TOTALIMAGES).toString()));
+            postsList.add(post);
+        }
+        loadPostImageDetailsFromPost(mainJsonObject);
+    }
+
+    public void parseUserFromJson(JSONObject mainJsonObject) throws JSONException {
+        JSONArray jsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_USER);
+        JSONArray homeJsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_HOME);
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject explrObject = jsonArray.getJSONObject(i);
+            User user = new User(
+                    explrObject.get(User.COLUMN_NAME).toString(),
+                    explrObject.get(User.COLUMN_USERID).toString(),
+                    explrObject.get(User.COLUMN_EMAIL).toString(),
+                    explrObject.get(User.COLUMN_DOB).toString(),
+                    explrObject.get(User.COLUMN_GENDER).toString(),
+                    explrObject.get(User.COLUMN_IMAGE).toString(),
+                    explrObject.get(User.COLUMN_DATEANDTIME).toString(),
+                    Integer.parseInt(explrObject.get(User.COLUMN_BASIC_INFORMATION).toString()),
+                    explrObject.get(User.COLUMN_ABOUTME).toString()
+            );
+            JSONObject homeJsonObject = homeJsonArray.getJSONObject(i);
+            userList.put(homeList.get(i).getPostId().toString(), user);
+           // userList.add(user);
+        }
+        loadAllCommentCount(mainJsonObject);
+    }
+    public void parseLikeStatusFromJson(JSONObject mainJsonObject) throws JSONException {
+        JSONArray jsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_LIKE_STATUS);
+        JSONArray homeJsonArray = mainJsonObject.getJSONArray(Constant.JSON_OBJECT_CONSTANT_HOME);
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject explrObject = jsonArray.getJSONObject(i);
+            Like likePost = new Like(
+                    explrObject.get(Like.COLUMN_POSTID).toString(),
+                    explrObject.get(Like.COLUMN_IMAGEID).toString()
+            );
+            JSONObject homeJsonObject = homeJsonArray.getJSONObject(i);
+            likeStatusList.put(homeList.get(i).getPostId().toString(), likePost);
+            // userList.add(user);
+        }
+        //printAllPostAndCommentCount();
+        notifyHomePostAdapter();
+    }
+    public void notifyHomePostAdapter(){
+//        Collections.reverse(homeList);
+//        Collections.reverse(postsList);
+//        userList = rUserList.descendingMap();
+//        postImageList = rPostImageList.descendingMap();
+//        commentCountList = rCommentCountList.descendingMap();
+//        likeStatusList = rLikeStatusList.descendingMap();
+
+        Log.e("test  ", "Post : "+userList.get(postsList.get(1).getPostId()).getUserId());
+        rpostsListAdapter.notifyDataSetChanged();
+        swipeRefreshLayout.setRefreshing(false);
+    }
+    public void setAllToInitialState(){
+        postDetailCount = 0;
+        postImageCount = 0;
+        commentCount = 0;
+        likeCount = 0;
+        userCount = 0;
+        homeList.clear();
+        postsList.clear();
+        userList.clear();
+        commentCountList.clear();
+        postImageList.clear();
+        likeStatusList.clear();
     }
 }

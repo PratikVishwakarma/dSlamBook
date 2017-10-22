@@ -11,6 +11,9 @@ import major.com.dslambook.Utility.Constant;
  */
 public class Like {
 
+    public final static String COLUMN_POSTID = "postId";
+    public final static String COLUMN_IMAGEID = "imageId";
+
     public String postId, time, date, imageId;
 
     public Like() {

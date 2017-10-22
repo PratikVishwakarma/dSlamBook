@@ -44,13 +44,13 @@ import major.com.dslambook.Utility.Utility;
 
 public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecyclerAdapter.MyViewHolder> {
 
+    public static final String POST_AD = "Post Ad";
     private List<Post> postList = new ArrayList<Post>();
     private Map<String, User> userList = new HashMap<>();
     private Map<String, String> postImageList = new HashMap<>();
     private Map<String, Integer> commentCountList = new HashMap<>();
     private Map<String, Like> likeStatusList = new HashMap<>();
     private Map<String, Like> tempLikeList = new HashMap<>();
-    private Map<String, Integer> postPositionList = new HashMap<>();
     private Utility utility;
 
     private Post currentPostItemChoose;
@@ -108,13 +108,13 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         }
 }
 
-    public PostsListRecyclerAdapter(Context mContext, List<Post> postList,
+    public PostsListRecyclerAdapter(Context mContext,
+                                    List<Post> postList,
                                     Map<String, User> userList,
                                     Map<String, Integer> commentCountList,
                                     Map<String, Like> likeStatusList,
                                     Map<String, String> postImageList,
-                                    String userId,
-                                    Map<String, Integer> postPositionList) {
+                                    String userId) {
         this.mContext = mContext;
         this.postList= postList;
         this.userList = userList;
@@ -122,7 +122,6 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
         this.commentCountList = commentCountList;
         this.likeStatusList= likeStatusList;
         this.userId = userId;
-        this.postPositionList = postPositionList;
         setLikes(likeStatusList);
     }
 
@@ -245,10 +244,6 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                 imageId_1_1 = likeSplit1_1[0].replace("_img.jpg","");
                 imageId_1_1_like = Integer.parseInt(likeSplit1_1[1]);
                 image_1_1_Url = likeSplit1_1[2];
-
-//                holder.postImageOneOne = (ImageView) holder.listItemView.findViewById(R.id.post_item_post_image_one_one);
-//                holder.postImageOneOneLike = (TextView) holder.listItemView.findViewById(R.id.post_item_post_like_one_one);
-
                 Picasso.with(mContext)
                         .load(image_1_1_Url).placeholder(R.drawable.placeholder_picture)
                         .error(R.drawable.placeholder_picture)
@@ -256,34 +251,9 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 
                 if(likeStatus.getImageId().equals(imageId_1_1)){
                     setLikeButton(holder.postImageOneOneLike, holder, currentPost, imageId_1_1_like, imageId_1_1, itemPosition, true);
-//                    holder.postImageOneOneLike.setText(imageId_1_1_like+"");
-//                    holder.postImageOneOneLike.setClickable(true);
-//                    holder.postImageOneOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
-//                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            holder.postImageOneOneLike.setClickable(false);
-//                            Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId_1_1+" pL = "+currentPost.getLike());
-//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1, currentPost, itemPosition, holder);
-//                        }
-//                    });
                 } else{
                     setLikeButton(holder.postImageOneOneLike, holder, currentPost, imageId_1_1_like, imageId_1_1, itemPosition, false);
-//                    holder.postImageOneOneLike.setText(imageId_1_1_like+"");
-//                    holder.postImageOneOneLike.setClickable(true);
-//                    holder.postImageOneOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
-//                    holder.postImageOneOneLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            holder.postImageOneOneLike.setClickable(false);
-//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_1_1+" pL = "+currentPost.getLike());
-//                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_1_1 , currentPost, itemPosition, holder);
-////                            notifyItemChanged(itemPosition);
-//                        }
-//                    });
                 }
-
-
                 break;
             case 2:
                 likeSplit2_1 = split[0].split(Pattern.quote(Constant.STRING_POST_IMAGE_LIKE_DIFFERENTIATOR));
@@ -314,46 +284,13 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 
                 if(likeStatus.getImageId().equals(imageId_2_1)){
                     setLikeButton(holder.postImageTwoOneLike, holder, currentPost, imageId_2_1_like, imageId_2_1, itemPosition, true);
-//                    holder.postImageTwoOneLike.setText(imageId_2_1_like+"");
-//                    holder.postImageTwoOneLike.setClickable(true);
-//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
-//                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            holder.postImageTwoOneLike.setClickable(false);
-//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_1+" pL = "+currentPost.getLike());
-//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1, currentPost, itemPosition, holder);
-//                        }
-//                    });
                 }
                 if(!likeStatus.getImageId().equals(imageId_2_1)){
                 setLikeButton(holder.postImageTwoOneLike, holder, currentPost, imageId_2_1_like, imageId_2_1, itemPosition, false);
-//                    holder.postImageTwoOneLike.setClickable(true);
-//                    holder.postImageTwoOneLike.setText(imageId_2_1_like+"");
-//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.not_like_circle, null));
-//                    holder.postImageTwoOneLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            holder.postImageTwoOneLike.setClickable(false);
-//                            Log.e("Post Ad","single  liked = "+currentPost.getPostId()+" iId : "+imageId_2_1+" pL = "+currentPost.getLike());
-//                            likePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_1 , currentPost, itemPosition, holder);
-//                        }
-//                    });
                 }
 
                 if(likeStatus.getImageId().equals(imageId_2_2)){
                     setLikeButton(holder.postImageTwoTwoLike, holder, currentPost, imageId_2_2_like, imageId_2_2, itemPosition, true);
-//                    holder.postImageTwoTwoLike.setClickable(true);
-//                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+"");
-//                    holder.postImageTwoOneLike.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.liked_circle, null));
-//                    holder.postImageTwoTwoLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            holder.postImageTwoTwoLike.setClickable(false);
-//                            Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId_2_2+" pL = "+currentPost.getLike());
-//                            notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId_2_2, currentPost, itemPosition, holder);
-//                        }
-//                    });
                 } if(!likeStatus.getImageId().equals(imageId_2_2)){
                     setLikeButton(holder.postImageTwoTwoLike, holder, currentPost, imageId_2_2_like, imageId_2_2, itemPosition, false);
 //                    holder.postImageTwoTwoLike.setText(imageId_2_2_like+"");
@@ -470,7 +407,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                             holder.postImageFourFourLike.setClickable(false);
                             break;
                     }
-                    Log.e("Post Ad","single not liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
+                    Log.e(POST_AD,"single not liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
                     notLikePost(currentPost.getUserId(),currentPost.getPostId(), imageId, currentPost, itemPosition, holder, CALL_TYPE_DIRECT,"");
                 }
             });
@@ -493,7 +430,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
                         holder.postImageFourFourLike.setClickable(false);
                         break;
                 }
-                    Log.e("Post Ad","single liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
+                    Log.e(POST_AD,"single liked = "+currentPost.getPostId()+" iId : "+imageId+" pL = "+currentPost.getLike());
                     likePost(currentPost.getUserId(),currentPost.getPostId(), imageId, currentPost, itemPosition, holder);
                 }
             });
@@ -513,7 +450,7 @@ public class PostsListRecyclerAdapter extends RecyclerView.Adapter<PostsListRecy
 
                     } else{
 //                        Log.e("Post Ad","in Like all Link = "+likeRef.child(userId).child(postId)+" = "+imageId);
-                        Log.e("Post Ad","in Like all ready liked once = "+value.getImageId()+" = "+imageId);
+                        Log.e(POST_AD,"in Like all ready liked once = "+value.getImageId()+" = "+imageId);
                         notLikePost(postUserId, postId, value.getImageId(), currentPost, itemPosition, holder, CALL_TYPE_INDIRECT, imageId);
 //                    likePost(postUserId, postId, imageId, currentPost, itemPosition, holder);
                     }

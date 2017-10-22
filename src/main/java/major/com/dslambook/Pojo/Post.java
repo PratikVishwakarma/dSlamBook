@@ -5,6 +5,14 @@ package major.com.dslambook.Pojo;
  */
 public class Post {
 
+    public final static String COLUMN_USERID = "userId";
+    public final static String COLUMN_POSTID = "postId";
+    public final static String COLUMN_CONTENT = "content";
+    public final static String COLUMN_TIME = "time";
+    public final static String COLUMN_DATE = "date";
+    public final static String COLUMN_LIKE = "like";
+    public final static String COLUMN_TOTALIMAGES = "totalImages";
+
     public String userId;
     public String postId;
     public String content;

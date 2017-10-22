@@ -9,6 +9,16 @@ import android.os.Parcelable;
 
 public class User implements Parcelable {
 
+    public final static String COLUMN_NAME = "name";
+    public final static String COLUMN_USERID = "userId";
+    public final static String COLUMN_EMAIL = "email";
+    public final static String COLUMN_DOB = "dob";
+    public final static String COLUMN_GENDER = "gender";
+    public final static String COLUMN_IMAGE = "image";
+    public final static String COLUMN_DATEANDTIME= "dateAndTime";
+    public final static String COLUMN_BASIC_INFORMATION = "isProvideBasicInformation";
+    public final static String COLUMN_ABOUTME = "aboutMe";
+
     public String name, userId, email, dob, gender, image, dateAndTime, aboutMe;
     public int isProvideBasicInformation;
 
